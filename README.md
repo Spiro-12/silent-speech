@@ -300,8 +300,8 @@ No. Only the AirPods' motion sensor. No sound is recorded or sent anywhere, and 
 
 **Which AirPods work?**
 AirPods with head tracking. Tested on AirPods Pro 3 (about 50 readings a second). AirPods Pro, AirPods Pro 2, AirPods
-Max and AirPods (3rd generation) or newer should work, but nobody has tested them with this yet. Older models send
-about 25 readings a second. If you try one, please [tell us how it went](https://github.com/Spiro-12/silent-speech/issues/new/choose).
+Max and AirPods (3rd generation) or newer should work, but nobody has tested them with this yet. Older models may send
+only about 25 readings a second (reported in papers, not tested here). If you try one, please [tell us how it went](https://github.com/Spiro-12/silent-speech/issues/new/choose).
 
 **Which Macs work?**
 Any Mac with macOS 14 (Sonoma) or newer, Apple silicon or Intel. The friendly calendar summary needs macOS 26 with
@@ -312,7 +312,7 @@ The dashboard is a secure (https) web page that talks to the Mac app at a local 
 Chrome allows that after you click Allow once. Other browsers may block it. Chrome is the one we tested.
 
 **Is anything sent to a server?**
-No. The dashboard is a static web page on GitHub Pages: no server behind it, no account, no analytics. Motion goes from
+No, apart from the texts you set up, which Messages sends like any iMessage. The dashboard is a static web page on GitHub Pages: no server behind it, no account, no analytics. Motion goes from
 the Mac app to that page on your own Mac. Your takes stay in your browser's storage for the site unless you export
 them. One thing to know: browsers share storage per site, so any page on `spiro-12.github.io` could read those takes.
 That is also why the pairing code is never stored there.
