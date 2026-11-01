@@ -7,6 +7,7 @@ Spun out of `Spiro-12/weekend-projects` (project 01) with its full history. MIT 
 - `web/` dashboard (Vite + vanilla TS), deployed to GitHub Pages at https://spiro-12.github.io/silent-speech/ (`base: '/silent-speech/'`).
 - `mac/` SilentSpeechBridge, the macOS app that streams AirPods head motion over a local WebSocket and runs actions.
 - `ml/` Python bench (same DTW kNN as `web/src/ml`), `data/raw/` Spiro's published recordings, `shared/` classes and fixtures.
+- `docs/` user docs (setup, calibration, results, safety, troubleshooting). `docs/dev/` internal docs: `PROTOCOL.md` (the contracts), `PLAN.md`, `RESEARCH.md`, `tracks/` (agent briefs), `mac-runbook.md` (the runbook for the Claude Code session on Spiro's Mac).
 - Tests: `npm run typecheck && npm test && npx playwright test` (e2e ports from `E2E_WEB_PORT` / `E2E_MOCK_PORT`; never use 8765 in tests). Pipe test output only with `set -o pipefail`.
 
 ## How we work with Spiro
@@ -19,7 +20,7 @@ Spun out of `Spiro-12/weekend-projects` (project 01) with its full history. MIT 
 
 ## Ship checklist (every PR, before merge)
 1. Author agent passes its own gate (typecheck, unit, e2e, build).
-2. A fresh reviewer agent that did not write the code reviews the diff against its brief and `docs/dev/PROTOCOL.md` (or `PROTOCOL.md` before the docs move) (high effort). Fix findings, re-review until clean.
+2. A fresh reviewer agent that did not write the code reviews the diff against its brief and `docs/dev/PROTOCOL.md` (high effort). Fix findings, re-review until clean.
 3. GitHub CI (`.github/workflows/ci.yml`) green: web job, Mac compile job, Python job.
 4. Claude checks it for real: headless browser screenshots and click through; on his Mac when connected.
 5. Merge with the GitHub REST API (`gh api repos/Spiro-12/silent-speech/pulls/N/merge -X PUT`). After the Pages deploy, load the live URL and confirm.

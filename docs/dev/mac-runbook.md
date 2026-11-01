@@ -1,4 +1,4 @@
-# SilentSpeechBridge: build, run, check (Mac)
+# SilentSpeechBridge: build, run, check (Mac runbook)
 
 For the Claude Code session running on Spiro's Mac. **Claude runs every command and reads every result.**
 Spiro only types his Mac password into macOS password boxes, clicks **Allow** / **Always Allow** on macOS popups,
@@ -6,20 +6,25 @@ and wears the AirPods. Never ask him to click anything in the app (one exception
 himself, as his deliberate OK), run commands or edit files. Before each popup, tell him in one plain sentence what is
 about to appear and what to click.
 
-Repo: `~/weekend-projects`. The app's log: `~/Library/Logs/SilentSpeechBridge.log` (new file each launch).
+(This was `mac/SETUP.md`. It is the runbook for that Mac session, not the setup guide for other people: that is
+[`docs/setup.md`](../setup.md).)
+
+Repo: `~/weekend-projects/silent-speech` (a clone of `github.com/Spiro-12/silent-speech` inside `~/weekend-projects`,
+the folder Spiro shares with Claude). Dashboard: https://spiro-12.github.io/silent-speech/.
+The app's log: `~/Library/Logs/SilentSpeechBridge.log` (new file each launch).
 Read it with `grep -v '#pair='` (not `cat`): after `--print-pair-url` it holds the pairing link, which must never
 show up in a chat.
 **Quit the app when not in use (it keeps the Mac awake):** `pkill -x SilentSpeechBridge`. Closing its window does
 not quit it (log: `Window closed, still running`); clicking its Dock icon opens the window again; Cmd+Q quits.
 
 ## Get the code (first time)
-`~/weekend-projects` is the folder Spiro shares with Claude. It may start empty.
+`~/weekend-projects` is the folder Spiro shares with Claude. The repo lives in its `silent-speech` folder.
 ```bash
 cd ~/weekend-projects
-if [ ! -d .git ]; then git init -q && git remote add origin https://github.com/Spiro-12/weekend-projects.git; fi
-git fetch origin && git checkout -f -B main origin/main   # works even if Finder left a .DS_Store here
+if [ ! -d silent-speech/.git ]; then git clone https://github.com/Spiro-12/silent-speech.git silent-speech; fi
+cd silent-speech && git fetch origin && git checkout -f -B main origin/main   # works even if Finder left a .DS_Store here
 ```
-(If the lead says a phase branch is under test, use that branch instead of `main`.)
+(If the lead says a branch is under test, use that branch instead of `main`.)
 
 ## 0. Prerequisites (check each, install only what is missing)
 Password steps use `osascript ... with administrator privileges`: a normal macOS password box for Spiro, so the
@@ -51,20 +56,20 @@ A stable `SilentSpeech Local` identity makes macOS remember the Motion and Autom
 Tell Spiro first: "Two Mac password boxes are coming. Type your password. When one says codesign wants to use a key,
 click Always Allow."
 ```bash
-cd ~/weekend-projects/01-silent-speech/mac && ./make-cert.sh
+cd ~/weekend-projects/silent-speech/mac && ./make-cert.sh
 ```
 It must end with `OK: signing works.` On `FAILED`, run it again. If the identity is already fine there are no popups.
 
 ## 2. Build
 **Default (no Xcode needed):**
 ```bash
-cd ~/weekend-projects/01-silent-speech/mac && ./build.sh && codesign -dv build/Debug/SilentSpeechBridge.app 2>&1 | grep -E "Authority|Signature"
+cd ~/weekend-projects/silent-speech/mac && ./build.sh && codesign -dv build/Debug/SilentSpeechBridge.app 2>&1 | grep -E "Authority|Signature"
 ```
 The build prints `OK: built ... (signed: SilentSpeech Local)`, then the codesign lines show `Authority=SilentSpeech Local`. This is how it was first built on Spiro's Mac (Oct 31).
 
 **With full Xcode** (optional, same result):
 ```bash
-cd ~/weekend-projects/01-silent-speech/mac && xcodegen && \
+cd ~/weekend-projects/silent-speech/mac && xcodegen && \
 xcodebuild -quiet -project SilentSpeechBridge.xcodeproj -target SilentSpeechBridge -configuration Debug build CODE_SIGN_IDENTITY="SilentSpeech Local" && \
 codesign -dv build/Debug/SilentSpeechBridge.app 2>&1 | grep -E "Authority|Signature"
 ```
@@ -87,7 +92,7 @@ clients" on (dev), `--print-pair-url` = write the dashboard link with `#pair=<to
 No option arms actions: Armed is off at every launch. `open --args` only reaches a fresh process,
 so quit the old copy first and wait until it is gone:
 ```bash
-cd ~/weekend-projects/01-silent-speech/mac && pkill -x SilentSpeechBridge; while pgrep -x SilentSpeechBridge >/dev/null; do sleep 0.2; done; open build/Debug/SilentSpeechBridge.app --args --simulate; sleep 3; grep -v '#pair=' ~/Library/Logs/SilentSpeechBridge.log
+cd ~/weekend-projects/silent-speech/mac && pkill -x SilentSpeechBridge; while pgrep -x SilentSpeechBridge >/dev/null; do sleep 0.2; done; open build/Debug/SilentSpeechBridge.app --args --simulate; sleep 3; grep -v '#pair=' ~/Library/Logs/SilentSpeechBridge.log
 ```
 The log shows `Listening on ws://127.0.0.1:8765`, `Launch option --simulate` and `Pairing: token ready` (or, the
 very first time, `Pairing: made a new token`).
@@ -97,7 +102,7 @@ First launch: tell Spiro "a popup may ask about Motion, click Allow".
 App running with `--simulate` (step 3).
 ```bash
 lsof -nP -iTCP:8765 -sTCP:LISTEN
-cd ~/weekend-projects/01-silent-speech && npm ci && npx tsx mac/check-bridge.ts
+cd ~/weekend-projects/silent-speech && npm ci && npx tsx mac/check-bridge.ts
 ```
 - `lsof` shows only `127.0.0.1:8765`.
 - Every line of the check is `PASS`: (a) lsof says 127.0.0.1 only, and the port is refused on each of the Mac's
@@ -111,9 +116,9 @@ cd ~/weekend-projects/01-silent-speech && npm ci && npx tsx mac/check-bridge.ts
   from `~/.silentspeech/token` and never prints it.
 - Toggle check: relaunch (step 3) with `--args --simulate --allow-no-origin`, run
   `npx tsx mac/check-bridge.ts --expect-no-origin-open` (all PASS), then relaunch with `--args --simulate` again.
-- Dashboard: `open -a "Google Chrome" "https://spiro-12.github.io/weekend-projects/01-silent-speech/?mode=live"`
-  (before Phase 1 is on Pages: `npm run dev` in `01-silent-speech`, then
-  `http://localhost:5173/weekend-projects/01-silent-speech/?mode=live`). If Chrome asks to let the page reach apps
+- Dashboard: `open -a "Google Chrome" "https://spiro-12.github.io/silent-speech/?mode=live"`
+  (before Phase 1 is on Pages: `npm run dev` in `~/weekend-projects/silent-speech`, then
+  `http://localhost:5173/silent-speech/?mode=live`). If Chrome asks to let the page reach apps
   on this device, Spiro clicks **Allow**. The log shows `Dashboard connected`; the dashboard shows about 50 Hz.
 
 ## 5. Real AirPods
@@ -122,9 +127,9 @@ cd ~/weekend-projects/01-silent-speech && npm ci && npx tsx mac/check-bridge.ts
    `brew install switchaudio-osx && SwitchAudioSource -a -t output` (find the name), then `SwitchAudioSource -t output -s "<AirPods name>"`.
 2. Relaunch without options (step 3, ending in `open build/Debug/SilentSpeechBridge.app` with no `--args`).
 3. `grep -E "Headphones|Motion" ~/Library/Logs/SilentSpeechBridge.log` shows `Headphones: connected`.
-4. `npx tsx mac/check-bridge.ts` from `01-silent-speech`: all PASS, and the INFO line shows hz 25 to 55 and gapPct under 5 (AirPods Pro 3 measured 50 Hz, 0% gaps).
+4. `npx tsx mac/check-bridge.ts` from `~/weekend-projects/silent-speech`: all PASS, and the INFO line shows hz 25 to 55 and gapPct under 5 (AirPods Pro 3 measured 50 Hz, 0% gaps).
    Then put another app in front and wait, to prove App Nap is off:
-   `open -a Finder && sleep 60 && cd ~/weekend-projects/01-silent-speech && npx tsx mac/check-bridge.ts`
+   `open -a Finder && sleep 60 && cd ~/weekend-projects/silent-speech && npx tsx mac/check-bridge.ts`
    gives the same result.
 5. Leave the app running for the dashboard, or quit it: `pkill -x SilentSpeechBridge`.
 
@@ -150,7 +155,7 @@ cd ~/weekend-projects/01-silent-speech && npm ci && npx tsx mac/check-bridge.ts
   sent it). Only resend after he says no.
 - **Focus music plays the wrong thing or nothing** (log `focus_music done: playing <track> by <artist> (...)` says
   what really played; `focus_music failed: ...` says why). Pick something else, by script only:
-  `cd ~/weekend-projects/01-silent-speech/mac && ./set-music.sh "<what>"` where `<what>` is a playlist name from
+  `cd ~/weekend-projects/silent-speech/mac && ./set-music.sh "<what>"` where `<what>` is a playlist name from
   Spiro's Music library (tried first), a `music.apple.com` link (Apple Music subscription needed), or a
   `spotify:playlist:...` URI / `open.spotify.com` link (only if Spotify is installed). It changes only the music
   entry. Never `cat` or open `~/.silentspeech/actions.json` (it holds Spiro's number).
@@ -171,10 +176,10 @@ The number never goes through a chat: Spiro types it into a macOS box and the se
 Log lines always start with the time (`HH:MM:SS`, two spaces). The greps below anchor on that and on the app's own
 fixed words, so nothing a website or a made up action name puts in the log can match them.
 
-**P1. Build and launch** (use the branch the lead names, e.g. `p2`, instead of `main` while it is under test):
+**P1. Build and launch** (use the branch the lead names, e.g. `p2`, or `main`):
 ```bash
-cd ~/weekend-projects && git fetch origin && git checkout -f -B p2 origin/p2
-cd 01-silent-speech && npm ci && cd mac && ./build.sh
+cd ~/weekend-projects/silent-speech && git fetch origin && git checkout -f -B p2 origin/p2
+npm ci && cd mac && ./build.sh
 pkill -x SilentSpeechBridge; while pgrep -x SilentSpeechBridge >/dev/null; do sleep 0.2; done
 open build/Debug/SilentSpeechBridge.app --args --simulate --print-pair-url; sleep 3
 grep -v '#pair=' ~/Library/Logs/SilentSpeechBridge.log
@@ -185,7 +190,7 @@ Keep `--simulate` on for all of Phase 2 (see P6).
 
 **P2. Token check.** Never `cat` the token, never paste it anywhere:
 `stat -f '%Sp %N' ~/.silentspeech ~/.silentspeech/token` shows `drwx------` and `-rw-------`. Then
-`cd ~/weekend-projects/01-silent-speech && npx tsx mac/check-bridge.ts`: every line PASS, including the `(f)` lines.
+`cd ~/weekend-projects/silent-speech && npx tsx mac/check-bridge.ts`: every line PASS, including the `(f)` lines.
 
 **P3. Pair the dashboard.** This opens the link without printing it:
 ```bash
@@ -194,15 +199,15 @@ URL=$(sed -n -E 's/^[0-9]{2}:[0-9]{2}:[0-9]{2}  Pair URL: (https:\/\/spiro-12\.g
 ```
 (The app's "Open dashboard" link does the same.) The dashboard keeps the token only while the tab is open, so open it
 from this link (or the app's link) every session. Before Phase 2 is on Pages, use the dev server instead:
-`npm run dev` in `01-silent-speech`, then
-`open -a "Google Chrome" "http://localhost:5173/weekend-projects/01-silent-speech/?mode=live#pair=$(cat ~/.silentspeech/token)"`
+`npm run dev` in `~/weekend-projects/silent-speech`, then
+`open -a "Google Chrome" "http://localhost:5173/silent-speech/?mode=live#pair=$(cat ~/.silentspeech/token)"`
 (the shell fills in the token; nothing is printed).
 
 **P4. Contact.** Tell Spiro: "A small box is about to pop up asking for your own mobile number. Type it with + and
 your country code first (like +61 4xx xxx xxx), then click Next. A second box shows the number back: click Yes only if
 it is right." Then run (with a 10 minute timeout, e.g. 600000 ms: it waits for Spiro):
 ```bash
-cd ~/weekend-projects/01-silent-speech/mac && ./set-contact.sh
+cd ~/weekend-projects/silent-speech/mac && ./set-contact.sh
 ```
 It prints only `Saved: text_mom, call_back and help now text the number ending in NN (••NN)`. Cancel, 3 tries without
 a Yes (a bad number or a No each count), or about 9 minutes: nothing saved, run it again. It writes
@@ -222,7 +227,7 @@ way (no launch option, no scripted clicks). Check:
 `Armed: actions from the paired dashboard will really run`. While Armed, `check-bridge.ts` refuses to run (on purpose).
 Switching Armed off also cancels anything not started yet (log: `<action> cancelled: not armed`).
 
-**P6. Fire each action once,** from `~/weekend-projects/01-silent-speech`, AirPods in and set as the sound output
+**P6. Fire each action once,** from `~/weekend-projects/silent-speech`, AirPods in and set as the sound output
 (step 5.1). Keep the app in Simulate mode (P1 launches it with `--simulate`) **and close the dashboard tab** while
 firing: a paired dashboard on an Armed app that sees real AirPods motion may send actions of its own.
 `fire-action.ts` sends one paired action, prints the reply (it must say `REAL`), then prints the app's log lines for

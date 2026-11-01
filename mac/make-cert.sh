@@ -1,5 +1,5 @@
 #!/bin/bash
-# Makes the "SilentSpeech Local" code signing identity in the login keychain (SETUP.md step 1).
+# Makes the "SilentSpeech Local" code signing identity in the login keychain (docs/setup.md option B; docs/dev/mac-runbook.md step 1).
 # With a stable identity macOS keeps the Motion / Automation permissions across rebuilds.
 # Safe to run again: a valid identity is kept; stale or broken copies are deleted and remade.
 # Popups: (1) your Mac password to trust the certificate (only when it is new),

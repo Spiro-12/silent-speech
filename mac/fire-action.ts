@@ -1,4 +1,4 @@
-// Sends ONE paired action to the running Mac app and prints the answer (SETUP.md Phase 2). Run from 01-silent-speech/:
+// Sends ONE paired action to the running Mac app and prints the answer (docs/dev/mac-runbook.md Phase 2). Run from the repo root:
 //   npx tsx mac/fire-action.ts --action volume_up
 //   npx tsx mac/fire-action.ts --action text_mom --yes-really     texts need --yes-really (only after Spiro said OK)
 // Options: --port 8765 (default, the real app), --token-file ~/.silentspeech/token, --wait <seconds> to watch the

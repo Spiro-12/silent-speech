@@ -5,10 +5,10 @@
 # prints only its last 2 digits. Other entries in the file are kept; with no file yet it starts from
 # actions.example.json. 3 tries (a bad number or a No counts as one), at most about 9 minutes in all.
 # The app window's "Text contact…" button does the same without the repo (SilentSpeechBridge/ActionSettings.swift).
-# Usage (SETUP.md Phase 2, step P4): ./set-contact.sh      (run it with a 10 minute timeout)
+# Usage (docs/dev/mac-runbook.md Phase 2, step P4): ./set-contact.sh      (run it with a 10 minute timeout)
 set -euo pipefail
 cd "$(dirname "$0")"
-command -v node >/dev/null || { echo "FAILED: node is missing (SETUP.md step 0.4)"; exit 1; }
+command -v node >/dev/null || { echo "FAILED: this script needs Node.js. Install it from https://nodejs.org (see docs/setup.md), or use the Text contact… button in the app window"; exit 1; }
 
 # One node program, two modes (SS_MODE): check prints the number as + and digits (exit 3 if it is not one),
 # save writes it. The number comes in through the environment (SS_NUM), never as an argument.
