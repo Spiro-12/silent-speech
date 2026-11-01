@@ -58,9 +58,11 @@ It is not dictation. It knows these 7 sentences and nothing else, and it has to 
 
 *By Spiro*
 
-A Y Combinator startup is building silent speech into a pair of glasses: you mouth words, the glasses understand.
-I liked the idea, but it means buying new hardware. So I asked a simpler question: **could the AirPods people already
-own do some of this, for free?**
+Not everyone can use their voice. Some people lose it for a while after surgery, some lose it to an illness, and
+some just can't talk out loud where they are: a quiet office, a library, or next to a sleeping baby. Voice
+assistants need you to talk out loud.
+
+So I asked a simple question: **could the AirPods people already own understand a sentence they only mouth, for free?**
 
 AirPods have a motion sensor for head tracking (it is what makes spatial audio follow your head), and Apple lets a Mac
 app read it. Research had already shown that the motion sensors in regular earbuds can pick up mouthed words. The
@@ -68,7 +70,8 @@ open source AirPods projects I found did head nods or counted chewing, not silen
 
 So I built it over one weekend, with Claude Code. Claude wrote, reviewed and tested the code. I did the parts that
 needed a person: wearing the AirPods, mouthing hundreds of sentences, clicking the macOS popups, and checking that my
-Mac really did each thing. It works well for me, on one ear, for 7 sentences. It is open source so you can try it on
+Mac really did each thing. It works well for me, on one ear, for 7 sentences. That is a first step, not a solution:
+it has to learn each person's mouth, and so far only I have tested it. Nobody who has lost their voice has tried it yet. It is open source so you can try it on
 your own mouth, see where it breaks, and make it better.
 
 ## Try it now in your browser
@@ -413,8 +416,6 @@ npm run typecheck && npm test && npx playwright test     # types, unit tests, br
 - Inspired by silent speech research: SwanTrumpet (IMWUT 2025) read words from the motion sensors of regular earbuds,
   and MuteIt (UbiComp 2022), Unvoiced (SenSys 2024), EchoSpeech (CHI 2023), LipLearner (CHI 2023) and MIT's AlterEgo
   showed silent commands from the jaw, face and lips. Notes: [docs/dev/RESEARCH.md](docs/dev/RESEARCH.md).
-- A Y Combinator startup is building silent speech into glasses. This project asks how far the AirPods you already
-  own can get, for free.
 - The "luck test" in the benchmark is an idea from [joeblau/subvox](https://github.com/joeblau/subvox).
 
 ## License
