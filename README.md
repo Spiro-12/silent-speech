@@ -11,7 +11,7 @@ reads your calendar to you.
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-lightgrey)
 
-<p align="center"><img src="docs/images/demo.gif" alt="Spiro mouths sentences with no sound, AirPods in, and his Mac shows each one it heard: Call me back later, Text mom I'm on my way, I created this demo in 48 hours (with confetti), then the red I need help right now alert" width="820"></p>
+<p align="center"><img src="docs/images/demo.gif" alt="Spiro mouths sentences with no sound, AirPods in, and his Mac shows each one it heard: Call me back later, Text mom I'm on my way, I created this demo in 48 hours (with confetti), then the red I need help right now alert" width="640"></p>
 
 <p align="center"><sub>Real time, no sound from Spiro. <a href="https://youtu.be/UwlPfRa7G9Q">Watch it with sound on YouTube</a> to hear the Mac answer.</sub></p>
 
