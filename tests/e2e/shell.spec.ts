@@ -25,7 +25,7 @@ test('panels mount and assets use the Pages base path', async ({ page }) => {
   await page.goto('./?mode=fake');
   await expect(page.locator('[data-panel=about]')).toBeVisible();
   const src = await page.locator('script[type=module]').getAttribute('src');
-  expect(src).toMatch(/^\/weekend-projects\/01-silent-speech\/assets\//);
+  expect(src).toMatch(/^\/silent-speech\/assets\//);
   expect(errors).toEqual([]);
 });
 

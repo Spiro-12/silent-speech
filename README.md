@@ -2,7 +2,7 @@
 
 > $0 silent speech on the AirPods you already own.
 
-**Live demo:** https://spiro-12.github.io/weekend-projects/01-silent-speech/
+**Live demo:** https://spiro-12.github.io/silent-speech/
 
 _Work in progress. Full write up, demo GIF and real accuracy numbers land in Phase 3._
 
@@ -15,6 +15,6 @@ _Work in progress. Full write up, demo GIF and real accuracy numbers land in Pha
 npm ci
 npm run dev            # dashboard on localhost:5173 (add ?mode=fake for fake data)
 npm run bridge -- --allow-origin http://localhost:5173   # mock Mac app on ws://127.0.0.1:18765
-                       # then open localhost:5173/weekend-projects/01-silent-speech/?mode=live&ws=ws://127.0.0.1:18765
+                       # then open localhost:5173/silent-speech/?mode=live&ws=ws://127.0.0.1:18765
 npm run typecheck && npm test && npx playwright test
 ```

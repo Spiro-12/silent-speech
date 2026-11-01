@@ -1,0 +1,47 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci && npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Smoke test the live site
+        # Pin to this build's hashed entry file, so the old deploy can't pass the check.
+        run: |
+          url="${{ steps.deployment.outputs.page_url }}"
+          want=$(grep -o 'assets/index-[A-Za-z0-9_-]*\.js' dist/index.html | head -1)
+          test -n "$want" || { echo "::error::could not find the built entry file"; exit 1; }
+          echo "Expecting /silent-speech/$want"
+          for i in $(seq 1 12); do
+            if curl -fsS --max-time 20 "$url" | grep -qF "/silent-speech/$want"; then echo "Live site OK: $url"; exit 0; fi
+            echo "not ready yet ($i), retrying"; sleep 10
+          done
+          echo "::error title=Live site check failed::$url did not serve the expected page"; exit 1

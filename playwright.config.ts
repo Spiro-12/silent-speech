@@ -5,7 +5,7 @@ import { defineConfig, devices } from '@playwright/test';
 // accidentally hit another worktree's build or the real Mac app on 8765.
 export const WEB_PORT = Number(process.env.E2E_WEB_PORT ?? 4173);
 export const MOCK_PORT = Number(process.env.E2E_MOCK_PORT ?? 18765);
-export const BASE = `http://localhost:${WEB_PORT}/weekend-projects/01-silent-speech/`;
+export const BASE = `http://localhost:${WEB_PORT}/silent-speech/`;
 /** Use in specs: page.goto(`./?mode=live&ws=${MOCK_WS}`) */
 export const MOCK_WS = `ws://127.0.0.1:${MOCK_PORT}`;
 

@@ -65,12 +65,12 @@ async function rig(session: unknown, opts: Record<string, string> = {}, env: Par
 const increasing = (xs: number[]) => xs.every((x, i) => i === 0 || x > xs[i - 1]);
 
 describe('resolveSessionUrl', () => {
-  const base = '/weekend-projects/01-silent-speech/', page = 'https://spiro-12.github.io/weekend-projects/01-silent-speech/?x=1';
+  const base = '/silent-speech/', page = 'https://spiro-12.github.io/silent-speech/?x=1';
   it('defaults to the demo file under the Pages base', () => {
-    expect(resolveSessionUrl(undefined, base, page)).toEqual({ url: 'https://spiro-12.github.io/weekend-projects/01-silent-speech/replay/demo-session.json', isDefault: true });
+    expect(resolveSessionUrl(undefined, base, page)).toEqual({ url: 'https://spiro-12.github.io/silent-speech/replay/demo-session.json', isDefault: true });
   });
   it('takes same site paths, refuses other sites', () => {
-    expect(resolveSessionUrl('replay/other.json', base, page)).toEqual({ url: 'https://spiro-12.github.io/weekend-projects/01-silent-speech/replay/other.json', isDefault: false });
+    expect(resolveSessionUrl('replay/other.json', base, page)).toEqual({ url: 'https://spiro-12.github.io/silent-speech/replay/other.json', isDefault: false });
     expect(resolveSessionUrl('/x.json', base, page)).toMatchObject({ url: 'https://spiro-12.github.io/x.json' });
     expect(resolveSessionUrl('https://evil.example/s.json', base, page)).toEqual({ error: 'Replay files must come from this site.' });
     expect(resolveSessionUrl('//evil.example/s.json', base, page)).toHaveProperty('error');
@@ -79,7 +79,7 @@ describe('resolveSessionUrl', () => {
 
 describe('fetchSameSiteJson', () => {
   const res = (url: string, ok = true, status = 200) => ({ url, ok, status, json: async () => ({ hi: 1 }) }) as unknown as Response;
-  const URL0 = 'https://spiro-12.github.io/weekend-projects/01-silent-speech/replay/demo-session.json';
+  const URL0 = 'https://spiro-12.github.io/silent-speech/replay/demo-session.json';
   it('returns the JSON from this site', async () => {
     await expect(fetchSameSiteJson(URL0, async () => res(URL0))).resolves.toEqual({ hi: 1 });
     await expect(fetchSameSiteJson(URL0, async () => res(''))).resolves.toEqual({ hi: 1 }); // no final url reported

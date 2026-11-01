@@ -8,7 +8,7 @@ final class Pairing {
     /// 32 lowercase hex chars. nil if the file could not be read or made: then every action is refused (fail closed).
     let token: String?
 
-    static let dashboardBase = "https://spiro-12.github.io/weekend-projects/01-silent-speech/?mode=live"
+    static let dashboardBase = "https://spiro-12.github.io/silent-speech/?mode=live"
     static let tokenFile = (ProtocolV1.tokenPath as NSString).expandingTildeInPath
     static let tokenBytes = 16 // 16 random bytes = 32 hex chars
 
