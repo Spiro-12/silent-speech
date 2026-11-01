@@ -2,6 +2,15 @@
 
 Thanks for helping. Bug reports, fixes, docs and test results on AirPods other than AirPods Pro 3 are all welcome.
 
+**No coding needed:** the most useful thing you can share is your own recordings, so we can see if it works for
+people other than Spiro. Open a [Share your recordings](https://github.com/Spiro-12/silent-speech/issues/new?template=share_recordings.yml)
+issue and attach the file from **Export JSON**.
+
+**Looking for something to code?** Start with the issues labeled
+[good first issue](https://github.com/Spiro-12/silent-speech/labels/good%20first%20issue) or
+[help wanted](https://github.com/Spiro-12/silent-speech/labels/help%20wanted).
+Be kind: see the [code of conduct](CODE_OF_CONDUCT.md). Security problems: see [SECURITY.md](SECURITY.md).
+
 ## The layout
 
 | Folder | What |

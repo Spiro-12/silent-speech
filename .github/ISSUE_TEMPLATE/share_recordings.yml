@@ -1,0 +1,52 @@
+name: Share your recordings
+description: Help test Silent Speech on more people. Attach the file you exported from the Record screen.
+title: "Recordings: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you! Right now we only know it works on one person's mouth. Your recordings help find out if it works for others.
+
+        1. Record at least one full session on the Record screen (15 takes of each sentence is the default).
+        2. Click **Export JSON**. It saves a file to your Downloads folder.
+        3. Drag that file into the box at the bottom. If GitHub refuses the `.json`, zip it first and drag the `.zip`.
+
+        The file holds head motion numbers, the time of each take, and the name you typed in Record > Settings. No sound, no contacts.
+  - type: input
+    id: airpods
+    attributes:
+      label: AirPods model
+      placeholder: AirPods Pro 2
+    validations:
+      required: true
+  - type: dropdown
+    id: ear
+    attributes:
+      label: Which AirPod was the sensor? (the dashboard shows it)
+      options: [Left, Right, Both at different times, Not sure]
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: macOS 15.3
+  - type: input
+    id: score
+    attributes:
+      label: What did "How well it knows your sentences" say? (optional)
+      placeholder: 92%
+  - type: textarea
+    id: notes
+    attributes:
+      label: Your file and anything we should know
+      description: Drag the exported file in here.
+    validations:
+      required: true
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Publishing
+      options:
+        - label: I agree that these recordings may be published in this repo under the MIT license.
+          required: true
