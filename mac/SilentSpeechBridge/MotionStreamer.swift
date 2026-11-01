@@ -38,6 +38,11 @@ final class MotionStreamer: NSObject, ObservableObject, CMHeadphoneMotionManager
     private var simTimer: Timer?
     private var simStart: TimeInterval = 0
     private var heardFromDelegate = false
+    /// Uptime of the last real AirPods sample, and of the last time we restarted the updates (watchdog below).
+    private var lastRealArrival: TimeInterval = 0
+    private var lastRestart: TimeInterval = 0
+    private var stallLogged = false
+    private var started = false // start() ran (refreshAuth at launch must not restart anything)
     private var lastErrorText = ""
 
     init(log: LogStore) {
@@ -55,12 +60,14 @@ final class MotionStreamer: NSObject, ObservableObject, CMHeadphoneMotionManager
         statsTimer = timer
 
         if manager.isDeviceMotionAvailable {
+            lastRestart = ProcessInfo.processInfo.systemUptime // the watchdog gives a fresh start 5 s
             startRealUpdates()
             log.add("Waiting for AirPods head motion")
         } else {
             setHeadphones(.unavailable)
             log.add("Head motion is not available on this Mac. Simulate motion still works.")
         }
+        started = true
     }
 
     // MARK: Real AirPods
@@ -80,6 +87,8 @@ final class MotionStreamer: NSObject, ObservableObject, CMHeadphoneMotionManager
     }
 
     private func handleReal(_ m: CMDeviceMotion, arrival: TimeInterval) {
+        lastRealArrival = arrival
+        stallLogged = false
         // If the AirPods were already connected before we started, the delegate may never say so.
         if !heardFromDelegate && headphones != .connected {
             setHeadphones(.connected)
@@ -200,12 +209,30 @@ final class MotionStreamer: NSObject, ObservableObject, CMHeadphoneMotionManager
         onSample?(msg)
     }
 
+    /// Stop and start the AirPods updates again. Needed on a first launch: the updates are asked for before the
+    /// Motion popup is answered, and on some Macs they never start flowing after Allow.
+    private func restartRealUpdates(_ why: String?) {
+        lastRestart = ProcessInfo.processInfo.systemUptime
+        manager.stopDeviceMotionUpdates()
+        startRealUpdates()
+        if let why = why { log.add(why) }
+    }
+
     private func refreshStats() {
         refreshAuth()
         // In case "available" was false at launch and changes later.
         if headphones == .unavailable && manager.isDeviceMotionAvailable {
             setHeadphones(.disconnected)
             startRealUpdates()
+        }
+        // Watchdog: AirPods connected and Motion allowed, but no real sample for 3 s. Try again every 5 s
+        // (AirPods out of the ears also stop the motion, so log it once per stall, not every time).
+        let now = ProcessInfo.processInfo.systemUptime
+        if !simulate && auth == .authorized && headphones == .connected && manager.isDeviceMotionAvailable
+            && now - lastRealArrival > 3 && now - lastRestart > 5 {
+            let first = !stallLogged
+            stallLogged = true
+            restartRealUpdates(first ? "No AirPods motion yet: starting it again (are the AirPods in your ears?)" : nil)
         }
         let stats = meter.stats(now: ProcessInfo.processInfo.systemUptime)
         hz = stats.hz
@@ -215,15 +242,22 @@ final class MotionStreamer: NSObject, ObservableObject, CMHeadphoneMotionManager
     private func refreshAuth() {
         let newAuth = MotionStreamer.authState(CMHeadphoneMotionManager.authorizationStatus())
         if newAuth != auth {
+            let wasAllowed = auth == .authorized
             auth = newAuth
             log.add("Motion permission: \(newAuth.rawValue)")
             onStateChange?()
+            // Just allowed (first launch popup): start the updates again so motion flows without a relaunch.
+            if started && newAuth == .authorized && !wasAllowed && manager.isDeviceMotionAvailable && lastRealArrival == 0 {
+                restartRealUpdates("Motion allowed: starting AirPods motion")
+            }
         }
     }
 
     private func setHeadphones(_ state: HeadphoneState) {
         guard state != headphones else { return }
         headphones = state
+        // Just connected: give the motion 5 s to start before the watchdog steps in.
+        if state == .connected { lastRestart = ProcessInfo.processInfo.systemUptime }
         log.add("Headphones: \(state.rawValue)")
         onStateChange?()
     }

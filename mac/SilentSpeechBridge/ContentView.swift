@@ -12,6 +12,8 @@ struct ContentView: View {
     @ObservedObject var log: LogStore
 
     var body: some View {
+        // The whole window scrolls, so nothing is cut off on a small screen (a 13 inch MacBook cut the top off).
+        ScrollView {
         VStack(alignment: .leading, spacing: 12) {
             Text("Silent Speech Bridge")
                 .font(.title2)
@@ -99,11 +101,12 @@ struct ContentView: View {
                         }
                     }
                 }
-                .frame(minHeight: 120)
+                .frame(height: 160) // a fixed height: a scroll view inside a scroll view needs one
             }
         }
         .padding(16)
-        .frame(minWidth: 480, minHeight: 640)
+        }
+        .frame(minWidth: 480, minHeight: 420)
         // Picks up actions.json changes made outside the window (for example with mac/set-contact.sh).
         .onAppear { runner.reloadIfChanged() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
