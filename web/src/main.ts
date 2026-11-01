@@ -86,8 +86,17 @@ const replayNote = document.createElement('div');
 replayNote.className = 'replay-note';
 replayNote.dataset.testid = 'replay-note-bar';
 replayNote.hidden = true;
-replayNote.innerHTML = `<span>Watching a replay of a real recorded session.</span> <button class="ghost" data-testid="try-fake">Try it yourself with fake data</button>`;
+replayNote.innerHTML = `<span>Watching a replay of a real recorded session.</span> <button class="ghost" data-testid="try-fake">Try it yourself with fake data</button>
+  <a class="setup-link" href="#setup" data-testid="setup-jump">Set it up on your Mac ↓</a>`;
 pttBtn.after(replayNote);
+(replayNote.querySelector('[data-testid=setup-jump]') as HTMLAnchorElement).onclick = (e) => {
+  const card = document.getElementById('setup');
+  if (!card) return; // plain #setup jump
+  e.preventDefault(); // no #setup in the address bar (people share it)
+  (e.currentTarget as HTMLElement).blur();
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  card.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+};
 (replayNote.querySelector('[data-testid=try-fake]') as HTMLButtonElement).onclick = () => {
   history.replaceState(null, '', `${location.pathname}?mode=fake`);
   app.setSource('fake').then(() => app.setMode('classify')).catch((e) => console.error('[source fake]', e));

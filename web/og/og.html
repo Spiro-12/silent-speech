@@ -1,0 +1,102 @@
+<!doctype html>
+<!--
+  Source of the share preview image web/public/og.png (1200x630), shown when the page is shared on X, iMessage,
+  Instagram, Slack... Not part of the site. To make the PNG again after changing this file:
+    node web/og/render.mjs
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  :root { --bg: #0b0d12; --text: #e8ebf2; --muted: #8a93a6; --accent: #7c9cff; --good: #3ddc97; --line: #222837; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    background:
+      radial-gradient(48% 62% at 82% 40%, #7c9cff2e 0%, transparent 70%),
+      radial-gradient(40% 50% at 100% 100%, #3ddc9724 0%, transparent 70%),
+      radial-gradient(36% 46% at 0% 0%, #7c9cff17 0%, transparent 70%),
+      var(--bg);
+    color: var(--text); font-family: "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { height: 100%; padding: 58px 62px 56px; display: grid; grid-template-columns: minmax(0, 1fr) 452px; gap: 38px; align-items: center; }
+  .left { display: flex; flex-direction: column; height: 100%; }
+  .brand { display: flex; align-items: center; gap: 14px; font-size: 27px; font-weight: 700; letter-spacing: .2px; }
+  .brand svg { width: 46px; height: 46px; }
+  h1 { margin-top: 40px; font-family: "Inter Display", "Inter", sans-serif; font-size: 80px; line-height: 1; white-space: nowrap; font-weight: 800; letter-spacing: -.035em; }
+  h1 .g { background: linear-gradient(95deg, #9db4ff 0%, #3ddc97 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { margin-top: 28px; font-size: 27px; line-height: 1.35; color: #a7afc0; font-weight: 500; }
+  .flow { margin-top: auto; display: flex; align-items: center; gap: 14px; font-size: 21px; font-weight: 600; color: #c9d0dd; }
+  .flow .step { display: inline-flex; align-items: center; gap: 10px; padding: 9px 16px 9px 12px; border-radius: 999px; border: 1px solid var(--line); background: #ffffff08; }
+  .flow svg { width: 26px; height: 26px; }
+  .flow .arr { color: #5d6680; font-size: 24px; }
+
+  .stage { position: relative; padding: 34px 34px 36px; border-radius: 28px; border: 1.5px solid #7c9cff66;
+    background: linear-gradient(180deg, #151b2b 0%, #0e1118 100%); box-shadow: 0 44px 120px -46px #7c9cffdd, 0 0 0 8px #7c9cff0d; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .state { display: inline-flex; align-items: center; gap: 12px; font-size: 19px; font-weight: 800; letter-spacing: 2.4px; text-transform: uppercase; color: var(--good); }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--good); box-shadow: 0 0 14px #3ddc97cc; }
+  .said { margin-top: 14px; font-size: 58px; line-height: 1.04; font-weight: 800; letter-spacing: -.025em; text-shadow: 0 0 46px #7c9cff55; }
+  .chip { margin-top: 26px; display: inline-flex; align-items: center; gap: 11px; padding: 11px 20px 11px 16px; border-radius: 999px;
+    border: 1.5px solid #3ddc9799; background: #3ddc9714; font-size: 19px; font-weight: 600; }
+  .chip i { width: 10px; height: 10px; border-radius: 50%; background: var(--good); box-shadow: 0 0 12px var(--good); }
+  .ring { position: relative; width: 88px; height: 88px; flex: none; margin: -8px -6px -8px 0; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring .num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring b { font-size: 25px; font-weight: 800; letter-spacing: -.02em; }
+  .ring small { font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--muted); margin-top: 1px; }
+  .quiet { margin-top: 22px; display: flex; align-items: center; gap: 10px; font-size: 17px; color: var(--muted); }
+  .quiet svg { width: 22px; height: 22px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="left">
+    <div class="brand">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9db4ff"/><stop offset="1" stop-color="#3ddc97"/></linearGradient></defs>
+        <rect width="64" height="64" rx="15" fill="#161a24"/>
+        <path d="M15 12h34a8 8 0 0 1 8 8v19a8 8 0 0 1-8 8H30l-11 8.5V47h-4a8 8 0 0 1-8-8V20a8 8 0 0 1 8-8z" fill="url(#lg)"/>
+        <g fill="#0b0d12"><rect x="16.5" y="26" width="5" height="9" rx="2.5"/><rect x="25.5" y="21" width="5" height="19" rx="2.5"/>
+          <rect x="34.5" y="17.5" width="5" height="26" rx="2.5"/><rect x="43.5" y="24" width="5" height="13" rx="2.5"/></g>
+      </svg>
+      Silent Speech
+    </div>
+    <h1>Talk without<br>making <span class="g">a sound.</span></h1>
+    <div class="sub">Mouth a sentence. Your AirPods feel it.<br>Your Mac does it.</div>
+    <div class="flow">
+      <span class="step">
+        <svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="#e8ebf2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 5.5a6.5 6.5 0 0 1 6.5 6.5c0 2.6-1.3 4.4-3.2 5.4V26a2.5 2.5 0 0 1-5 0V18.2A6.5 6.5 0 0 1 13 5.5z"/>
+          <path d="M23.5 10.5c1.2 1.6 1.2 4.4 0 6M26.8 8.2c2.4 3 2.4 8.6 0 11.6" stroke="#7c9cff"/>
+        </svg>AirPods</span>
+      <span class="arr">→</span>
+      <span class="step">
+        <svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="#e8ebf2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="6" y="7" width="20" height="14" rx="2"/><path d="M3 25h26"/>
+        </svg>Mac</span>
+      <span class="arr">→</span>
+      <span class="step" style="border-color:#3ddc9755;color:#3ddc97">Done</span>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="top">
+    <div class="state"><span class="dot"></span>You said</div>
+    <div class="ring">
+      <svg viewBox="0 0 120 120"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9db4ff"/><stop offset="1" stop-color="#3ddc97"/></linearGradient></defs>
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#ffffff12" stroke-width="10"/>
+        <circle cx="60" cy="60" r="50" fill="none" stroke="url(#rg)" stroke-width="10" stroke-linecap="round" stroke-dasharray="314.16" stroke-dashoffset="12.6"/></svg>
+      <div class="num"><b>96%</b><small>sure</small></div>
+    </div>
+    </div>
+    <div class="said">Text mom I'm on my way</div>
+    <div class="chip"><i></i>Sending the text to Mom</div>
+    <div class="quiet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#8a93a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="m22 9-6 6M16 9l6 6"/></svg>
+      No sound. Just the motion of your jaw.
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -21,8 +21,8 @@ const panel: Panel = {
     if (card) card.hidden = true;
     el.innerHTML = `
       <div class="sr" data-testid="recorder" data-rec="0">
-        <p>Records a whole run (motion, push to talk, what the model heard, actions) as a replay file for the website.
-          Say each sentence when it's shown, so the replay can score it.</p>
+        <p>Records a whole run (motion, push to talk, what the model heard, actions) as a replay file, like the one
+          visitors watch on this page. Say each sentence when it's shown, so the replay can score it.</p>
         <div class="sr-btns">
           <button class="rec" data-testid="recorder-record">Record session</button>
           <button data-testid="recorder-stop" disabled>Stop</button>

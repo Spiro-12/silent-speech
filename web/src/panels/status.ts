@@ -1,6 +1,7 @@
 // Status panel: is the Mac bridge connected, are the AirPods streaming, and how healthy is the signal.
 import type { App, Panel } from '../core/app';
 import type { StatusMsg } from '../core/contracts';
+import { DOWNLOAD_URL, SETUP_GUIDE_URL } from '../core/links';
 
 type Tone = 'good' | 'warn' | 'bad' | 'idle';
 
@@ -32,6 +33,12 @@ const CSS = `
   .ss-status dl { grid-template-columns: minmax(0, auto) minmax(0, 1fr); }
 }
 .ss-status .tile .val { overflow: hidden; text-overflow: ellipsis; }
+.ss-status .help { padding: 12px 14px; border-radius: 12px; border: 1px solid #ffb54766; background: #ffb54712; font-size: 13px; line-height: 1.5; }
+.ss-status .help[hidden] { display: none; }
+.ss-status .help b { color: var(--text); }
+.ss-status .help ol { margin: 6px 0 8px; padding-left: 20px; color: #c9d0dd; }
+.ss-status .help li + li { margin-top: 2px; }
+.ss-status .help .links { display: flex; flex-wrap: wrap; gap: 4px 14px; }
 @keyframes ss-pulse { 0%, 100% { box-shadow: 0 0 0 0 #3ddc9766; } 50% { box-shadow: 0 0 0 6px #3ddc9700; } }
 @media (prefers-reduced-motion: reduce) { .ss-status .head .dot { animation: none !important; } }
 `;
@@ -43,6 +50,12 @@ function injectCss(id: string, css: string) {
   s.textContent = css;
   document.head.append(s);
 }
+
+/**
+ * Live but never connected: wait this long before saying "Can't reach the Mac app" (here and on the setup card),
+ * so it doesn't flash while connecting, or during the shell's 1.5 s live check for returning visitors.
+ */
+export const OFFLINE_AFTER_MS = 2500;
 
 /** 23 to 27 Hz (AirPods Pro 2 style) or 45 to 55 Hz (AirPods Pro 3 may stream at 50). */
 export const rateOk = (hz: number) => (hz >= 23 && hz <= 27) || (hz >= 45 && hz <= 55);
@@ -70,6 +83,16 @@ const panel: Panel = {
           <span class="dot"></span>
           <div><div class="headline">Starting…</div><div class="conn" data-testid="status-conn">connecting</div></div>
         </div>
+        <div class="help" data-testid="status-help" role="status" hidden>
+          <b>The page can’t reach the Mac app. Check these:</b>
+          <ol>
+            <li>Is the Silent Speech Mac app (SilentSpeechBridge) open?</li>
+            <li>Open this page from its <b>Open dashboard</b> button.</li>
+            <li>Chrome may ask to let this page reach apps on your Mac. Click <b>Allow</b>.</li>
+          </ol>
+          <div class="links"><a data-testid="status-download" href="${DOWNLOAD_URL}">Download the Mac app</a>
+            <a href="${SETUP_GUIDE_URL}" target="_blank" rel="noopener">Setup guide</a></div>
+        </div>
         <div class="tiles">
           <div class="tile" data-k="bridge"><div class="lab"><span class="dot"></span>Mac sends<span class="word"></span></div>
             <div class="val" data-testid="status-bridge-hz">–</div><div class="sub">per second</div></div>
@@ -90,7 +113,7 @@ const panel: Panel = {
       </div>`;
 
     const q = <T extends HTMLElement = HTMLElement>(sel: string) => el.querySelector(sel) as T;
-    const head = q('.head'), headline = q('.headline'), connEl = q('[data-testid=status-conn]');
+    const head = q('.head'), headline = q('.headline'), connEl = q('[data-testid=status-conn]'), help = q('[data-testid=status-help]');
     const tile = (k: string) => q(`.tile[data-k=${k}]`);
     const row = (k: string) => q(`dd[data-k=${k}]`);
     const setTone = (node: HTMLElement, tone: Tone) => { if (node.dataset.tone !== tone) node.dataset.tone = tone; };
@@ -113,16 +136,19 @@ const panel: Panel = {
     const arrivals: number[] = []; // performance.now() of each motion sample, last 10 s
     const misses: { at: number; n: number }[] = []; // seq jumps seen by the browser, last 10 s
     let lastSeq: number | null = null;
+    let failed = false; // live: a connection attempt failed or dropped since this source started
+    let sourceAt = performance.now();
 
     app.bus.on('conn', (c) => {
       conn = c;
+      if (c.state === 'closed') failed = true;
       if (c.state !== 'open') status = null; // device info is only true while connected: wait for a fresh status
       render();
     });
     app.bus.on('status', (s) => { status = s; render(); });
     app.bus.on('invalid', () => { invalid++; render(); });
     app.bus.on('source', () => {
-      status = null; invalid = 0; lastSeq = null;
+      status = null; invalid = 0; lastSeq = null; failed = false; sourceAt = performance.now();
       arrivals.length = 0; misses.length = 0;
       render();
     });
@@ -181,7 +207,7 @@ const panel: Panel = {
       setText(connEl, `${kind} · ${conn.state}${where}${conn.state === 'closed' && kind === 'live' ? ' · retrying' : ''}`);
       let tone: Tone, text: string;
       if (conn.state === 'connecting') [tone, text] = ['warn', 'Connecting to the Mac…'];
-      else if (!open) [tone, text] = ['bad', kind === 'live' ? 'Mac app not reachable' : 'Stopped'];
+      else if (!open) [tone, text] = ['bad', kind === 'live' ? 'Can’t reach the Mac app' : 'Stopped'];
       else if (!status) [tone, text] = ['warn', kind === 'live' ? 'Connected, waiting for the Mac…' : 'Starting…'];
       else if (status.headphones !== 'connected') [tone, text] = ['warn', 'Put in your AirPods'];
       else if (status.auth !== 'authorized') [tone, text] = ['warn', 'Motion access needed'];
@@ -191,6 +217,8 @@ const panel: Panel = {
       else [tone, text] = ['good', kind === 'live' ? (status.simulated ? 'Streaming (simulated)' : 'Streaming from AirPods') : `Streaming ${kind} data`];
       setTone(head, tone);
       setText(headline, text);
+      // Live, not connected (after a failed try, and not in the first moments): say what to do.
+      help.hidden = !(kind === 'live' && !open && failed && now - sourceAt >= OFFLINE_AFTER_MS);
     }
 
     render();

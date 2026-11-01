@@ -73,6 +73,7 @@ export function actionReadiness(recorded: { label: string }[], classIds: string[
 }
 
 export type Provenance = 'own' | 'preview' | 'public' | 'demo' | 'other';
+
 export type Plan = 'own' | 'preview' | 'keep' | 'public' | 'demo';
 
 /** Minimum number of classes with real clips before we train a preview model. */

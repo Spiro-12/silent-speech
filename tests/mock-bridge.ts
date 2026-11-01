@@ -39,10 +39,13 @@ export interface MockBridge {
   close(): Promise<void>;
   sent: { motion: number; bad: number };
   actions: { action: string; dryRun: boolean }[];
+  /** Like switching Armed in the Mac app: sends a fresh status right away (PROTOCOL: status "on change"). */
+  setArmed(on: boolean): void;
 }
 
 export async function startMockBridge(o: MockBridgeOpts = {}): Promise<MockBridge> {
-  const hz = o.hz ?? 25, armed = o.armed ?? false, cooldownMs = o.cooldownMs ?? 3000;
+  const hz = o.hz ?? 25, cooldownMs = o.cooldownMs ?? 3000;
+  let armed = o.armed ?? false;
   const sensitiveCooldownMs = o.sensitiveCooldownMs ?? 30_000;
   const origins = new Set([...ALLOWED_ORIGINS, ...(o.allowOrigins ?? [])]);
   const classes = classesJson as ClassDef[];
@@ -55,11 +58,12 @@ export async function startMockBridge(o: MockBridgeOpts = {}): Promise<MockBridg
   });
   await new Promise<void>((res) => wss.once('listening', () => res()));
   const port = (wss.address() as AddressInfo).port;
-  const state: MockBridge = { port, sent: { motion: 0, bad: 0 }, actions: [], close: async () => {} };
+  const state: MockBridge = { port, sent: { motion: 0, bad: 0 }, actions: [], close: async () => {}, setArmed: () => {} };
   const lastRun = new Map<string, number>();
   const send = (ws: WebSocket, m: ServerMsg | string) => ws.readyState === ws.OPEN && ws.send(typeof m === 'string' ? m : JSON.stringify(m));
   const broadcast = (m: ServerMsg | string) => wss.clients.forEach((ws) => send(ws, m));
   const status = () => fakeStatus({ armed, clients: wss.clients.size, simulated: !o.real, hz });
+  state.setArmed = (on) => { armed = on; broadcast(status()); };
 
   wss.on('connection', (ws) => {
     send(ws, { ...fakeHello(actions, armed), app: MOCK_APP_NAME });
