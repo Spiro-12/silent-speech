@@ -1,4 +1,4 @@
-// Automation (Apple Events) permission for another app, without freezing the app: the popup that asks Spiro waits
+// Automation (Apple Events) permission for another app, without freezing the app: the popup that asks you waits
 // on a background queue, so motion and status keep flowing to the dashboard while it is on screen.
 import AppKit
 import CoreServices

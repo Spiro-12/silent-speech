@@ -2,7 +2,7 @@
 # Makes the "SilentSpeech Local" code signing identity in the login keychain (SETUP.md step 1).
 # With a stable identity macOS keeps the Motion / Automation permissions across rebuilds.
 # Safe to run again: a valid identity is kept; stale or broken copies are deleted and remade.
-# Popups for Spiro: (1) his Mac password to trust the certificate (only when it is new),
+# Popups: (1) your Mac password to trust the certificate (only when it is new),
 # (2) the test signature at the end: "codesign wants to sign using key ...": password + "Always Allow".
 set -eu
 
@@ -68,7 +68,7 @@ else
   echo "OK: made \"$NAME\"."
 fi
 
-# Test signature now, so the keychain popup shows up while Spiro is at the keyboard (not during a build).
+# Test signature now, so the keychain popup shows up while you are at the keyboard (not during a build).
 echo "Test signing: if a popup asks, type the Mac password and click Always Allow."
 TEST=$(mktemp /tmp/ss-sign-test.XXXXXX)
 cp /usr/bin/true "$TEST"
