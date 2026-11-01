@@ -61,6 +61,7 @@ jobs:
           set -o pipefail
           SIGN_IDENTITY=- ./build.sh --release 2>&1 | tee /tmp/build-release.log || { grep -E "error:" /tmp/build-release.log | head -20 | sed 's/^/::error::/'; exit 1; }
           lipo build/Release/SilentSpeechBridge.app/Contents/MacOS/SilentSpeechBridge -verify_arch arm64 x86_64
+          ./check-weak-links.sh build/Release/SilentSpeechBridge.app/Contents/MacOS/SilentSpeechBridge
       - if: steps.check.outputs.has != 'true'
         run: echo "No Mac app yet, skipping."
 

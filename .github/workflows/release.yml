@@ -59,6 +59,7 @@ jobs:
           PLIST="$APP/Contents/Info.plist"
           lipo -info "$BIN"
           lipo "$BIN" -verify_arch arm64 x86_64
+          "$GITHUB_WORKSPACE/mac/check-weak-links.sh" "$BIN"
           codesign -dv --verbose=2 "$APP" > /tmp/codesign.txt 2>&1
           cat /tmp/codesign.txt
           grep -q "Signature=adhoc" /tmp/codesign.txt
