@@ -17,9 +17,10 @@ Be kind: see the [code of conduct](CODE_OF_CONDUCT.md). Security problems: see [
 |---|---|
 | `web/` | The dashboard: Vite + plain TypeScript, no framework. Panels in `web/src/panels/`, data sources in `web/src/sources/`, the model in `web/src/ml/`. |
 | `mac/` | SilentSpeechBridge, the Mac app (Swift, SwiftUI). Builds with the Command Line Tools only. |
-| `ml/` | The Python benchmark (same DTW + kNN as the dashboard, plus MiniRocket and a 1D CNN). |
+| `ml/` | The Python benchmark (same DTW + kNN as the dashboard, plus MiniRocket and a 1D CNN). Report in [ml/RESULTS.md](ml/RESULTS.md). |
 | `shared/` | `classes.json` (the sentences) and test fixtures. |
-| `data/raw/` | Spiro's published recordings. |
+| `data/` | Spiro's published recordings (`data/raw/`) and the first early test (`data/early-test/`). |
+| `scripts/` | Command line tools: evaluate the model, export the public model, build the replay, make test data. |
 | `tests/` | Unit tests (Vitest), browser tests (Playwright) and the mock Mac app (`tests/mock-bridge.ts`). |
 | `docs/` | User docs. `docs/dev/` has the contracts ([PROTOCOL.md](docs/dev/PROTOCOL.md)) and the build history. |
 

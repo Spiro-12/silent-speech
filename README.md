@@ -67,15 +67,16 @@ it yet. It is open source so you can try it on your own mouth, see where it brea
 You need a Mac on macOS 14 or newer, AirPods with head tracking (tested on AirPods Pro 3), and Google Chrome.
 
 1. **Get the Mac app.** [Download SilentSpeechBridge](https://github.com/Spiro-12/silent-speech/releases/latest/download/SilentSpeechBridge-macOS.zip),
-   unzip it and move it to Applications. It is not signed by Apple, so the first time, open
-   **System Settings > Privacy & Security** and click **Open Anyway**.
+   unzip it and move it to Applications. It is not signed by Apple, so the first time you open it, macOS blocks it:
+   click **Done**, then in **System Settings > Privacy & Security** click **Open Anyway** and type your Mac password.
 2. **Put in your AirPods** (one ear is best) and click **Allow** when macOS asks about motion.
-3. **Click "Open dashboard"** in the app window. If Chrome asks to let the page reach apps on your Mac, click
-   **Allow**. You should see about **50 Hz**.
+3. **Make Chrome your default browser** (System Settings > Desktop & Dock), then **click "Open dashboard"** in the
+   app window. If Chrome asks to let the page reach apps on your Mac, click **Allow**. You should see about **50 Hz**.
 4. **Record.** Hold <kbd>Space</kbd>, mouth the sentence on screen with no sound, let go. Do every sentence at
    least 5 times (15 is the default).
 5. **Recognize, then go live.** Switch to Recognize and check it gets your sentences right. Then click
-   **Text contact…** in the app to set who texts go to, and turn on **Armed**. Now your sentences really run.
+   **Text contact…** in the app and type a mobile number with + and the country code (use your own first), then
+   turn on **Armed**. Now your sentences really run.
 
 Every popup and what to click: **[Setup](docs/setup.md)**. Getting it accurate:
 **[Train it on your mouth](docs/calibration.md)**. Every screen explained: **[Using it](docs/using.md)**.
