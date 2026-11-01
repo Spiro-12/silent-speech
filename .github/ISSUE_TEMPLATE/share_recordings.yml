@@ -11,7 +11,9 @@ body:
         2. Click **Export JSON**. It saves a file to your Downloads folder.
         3. Drag that file into the box at the bottom. If GitHub refuses the `.json`, zip it first and drag the `.zip`.
 
-        The file holds head motion numbers, the time of each take, and the name you typed in Record > Settings. No sound, no contacts.
+        The file holds head motion numbers, the date and time of each take, the session name, which ear, and the **Your name** from Record > Settings as it was when you recorded (default "me"). No sound, no contacts.
+
+        **Anyone can download the file as soon as you post this issue.**
   - type: input
     id: airpods
     attributes:
@@ -48,5 +50,5 @@ body:
     attributes:
       label: Publishing
       options:
-        - label: I agree that these recordings may be published in this repo under the MIT license.
+        - label: I understand this issue and the file are public as soon as I post them, and I agree they may be published in this repo under the MIT license.
           required: true
