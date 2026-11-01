@@ -11,15 +11,9 @@ reads your calendar to you.
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-lightgrey)
 
-[![Silent Speech demo video](https://img.youtube.com/vi/UwlPfRa7G9Q/maxresdefault.jpg)](https://youtu.be/UwlPfRa7G9Q)
+<p align="center"><img src="docs/images/demo.gif" alt="Spiro mouths sentences with no sound, AirPods in, and his Mac shows each one it heard: Call me back later, Text mom I'm on my way, I created this demo in 48 hours (with confetti), then the red I need help right now alert" width="640"></p>
 
-<sub>Watch the demo video on YouTube (click the picture).</sub>
-
-<!--
-  DEMO GIF SLOT (not made yet).
-  When docs/images/demo.gif exists, put it here, above the video link:
-  <p align="center"><img src="docs/images/demo.gif" alt="Spiro mouths sentences with AirPods in, and his Mac does each one" width="820"></p>
--->
+<p align="center"><sub>Real time, no sound from Spiro. <a href="https://youtu.be/UwlPfRa7G9Q">Watch it with sound on YouTube</a> to hear the Mac answer.</sub></p>
 
 ![The dashboard replaying a real session: it heard "Call me back later", 97% sure, 5 of 6 takes right so far](docs/images/replay.jpg)
 
