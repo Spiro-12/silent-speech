@@ -157,7 +157,7 @@ test('records 3 sentences × 3 takes as fake practice, exports a valid file, and
   const { name, ds } = await exportFile(page);
   expect(name).toMatch(/^ss-dataset-fake-1-\d{8}-\d{4}\.json$/);
   expect(validateDataset(ds)).toEqual([]);
-  expect(ds).toMatchObject({ format: 'ss-dataset', v: 1, session: 'fake-1', subject: 'spiro', source: 'fake', hz: 25, device: { model: 'AirPods', loc: 'left' } });
+  expect(ds).toMatchObject({ format: 'ss-dataset', v: 1, session: 'fake-1', subject: 'me', source: 'fake', hz: 25, device: { model: 'AirPods', loc: 'left' } });
   expect(ds.classes).toEqual(classes);
   expect(ds.clips.map((c) => c.label)).toEqual(said);
   for (const c of ds.clips) {
@@ -349,7 +349,7 @@ test('finding 3: real takes need live AirPods; simulated data goes to a separate
   const { name, ds } = await exportFile(page);
   expect(name).toMatch(/^ss-dataset-s1-/);
   expect(validateDataset(ds)).toEqual([]);
-  expect(ds).toMatchObject({ session: 's1', subject: 'spiro', source: 'airpods', hz: 50, device: { model: 'AirPods', loc: 'right' } });
+  expect(ds).toMatchObject({ session: 's1', subject: 'me', source: 'airpods', hz: 50, device: { model: 'AirPods', loc: 'right' } });
   expect(ds.clips).toHaveLength(2);
 
   // a practice name can't be used for real takes
@@ -508,7 +508,10 @@ test('finding 6: import dedupes by id, renames sessions that would mix, and expl
 
 test('finding 6: a real session from another browser with the same name gets its own name', async ({ page }) => {
   test.setTimeout(60_000);
+  // Same person: a name saved in an earlier visit (like Spiro's) still wins over the neutral default.
+  await page.addInitScript(() => localStorage.setItem('ss.enroll', JSON.stringify({ subject: 'spiro' })));
   await scriptedLive(page);
+  await expect(page.getByTestId('enroll-subject')).toHaveValue('spiro');
   await record(page, 1); // local real s1
   const other: Dataset = {
     ...tiny, subject: 'spiro', source: 'airpods', session: 's1',
@@ -518,6 +521,18 @@ test('finding 6: a real session from another browser with the same name gets its
   await expect(page.getByTestId('enroll-note')).toContainText('Renamed session s1 → spiro-s1');
   expect((await sessions(page)).sort()).toEqual(['s1', ...Array<string>(6).fill('spiro-s1')]);
   expect((await exportFile(page)).ds.clips).toHaveLength(1); // s1 is still only the local take
+});
+
+test('a stranger (default name "me") importing Spiro\'s real session gets it under his name, never mixed into theirs', async ({ page }) => {
+  await page.goto('./?mode=fake');
+  await expect(prompt(page)).toHaveAttribute('data-state', 'prompt');
+  await expect(page.getByTestId('enroll-subject')).toHaveValue('me');
+  const spiros: Dataset = {
+    ...tiny, subject: 'spiro', source: 'airpods', session: 's9', clips: tiny.clips.map((c) => ({ ...c, id: `sp-${c.id}`, session: 's9' })),
+  };
+  await page.getByTestId('enroll-import').setInputFiles({ name: 'spiro.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(spiros)) });
+  await expect(page.getByTestId('enroll-note')).toContainText('Renamed session s9 → spiro-s9');
+  expect(new Set(await sessions(page))).toEqual(new Set(['spiro-s9']));
 });
 
 test('round 2, finding 6: IndexedDB that never answers falls back to memory with a clear message', async ({ page }) => {

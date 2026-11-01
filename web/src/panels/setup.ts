@@ -2,12 +2,13 @@
 // - Visitors (replay or fake AirPods): "Set it up on your Mac": 4 short steps, the download and the setup guide.
 // - Live, but the Mac app can't be reached: the same card, headed "Can't reach the Mac app".
 // - Live and connected: a small getting started checklist that ticks itself from app state. Collapsible; it
-//   folds itself away once everything is done and stays folded after that (no nagging).
+//   folds itself away the first time everything is done, and after that stays the way the person leaves it.
 import './setup/setup.css';
 import type { App, Panel } from '../core/app';
 import type { StatusMsg } from '../core/contracts';
 import { DOWNLOAD_URL, REPO_URL, SETUP_GUIDE_URL } from '../core/links';
-import { actionReadiness, isOwnModel, realClips, type Readiness } from './result/model-source';
+import { isOwnModel } from './result';
+import { actionReadiness, realClips, type Readiness } from './result/model-source';
 import { OFFLINE_AFTER_MS, checklist, setupView, type SetupView } from './setup/logic';
 
 const PREFS_KEY = 'ss.setup';
@@ -81,7 +82,6 @@ class SetupPanel {
   private restored = false;
   private prefs = loadPrefs();
   private wantOpen: boolean | null = null; // what this panel last set <details> to (null: not shown yet)
-  private allDone: boolean | null = null;
   private offlineTimer: ReturnType<typeof setTimeout> | null = null;
   private itemsHtml = '';
 
@@ -173,7 +173,9 @@ class SetupPanel {
 
   private renderChecklist() {
     const { r } = this;
-    const items = checklist({ open: this.open, status: this.status, recorded: this.recorded, ownModel: isOwnModel(this.app.model) });
+    const items = checklist({
+      open: this.open, status: this.status, recorded: this.recorded, ownModel: isOwnModel(this.app.model), paired: !!this.app.pairToken,
+    });
     const done = items.filter((i) => i.done).length;
     const all = done === items.length;
     const html = items.map((it, i) => `<li data-testid="check-${it.id}" data-done="${it.done ? 1 : 0}">
@@ -189,15 +191,11 @@ class SetupPanel {
 
     // Open or folded: the person's own choice wins; otherwise open until everything was done once.
     if (this.wantOpen === null) this.setOpen(this.prefs.open ?? !(this.prefs.done || all));
-    if (all && this.allDone === false) { // just finished: fold it away for good
+    if (all && !this.prefs.done) { // done for the first time ever: fold it away, once. After that it's theirs.
       this.prefs = { done: true };
       this.savePrefs();
       this.setOpen(false);
-    } else if (all && !this.prefs.done) {
-      this.prefs.done = true;
-      this.savePrefs();
     }
-    this.allDone = all;
   }
 
   private setOpen(open: boolean) {

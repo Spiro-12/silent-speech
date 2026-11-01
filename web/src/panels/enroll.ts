@@ -58,7 +58,8 @@ interface Settings {
 }
 
 function loadSettings(): Settings {
-  const d: Settings = { session: 's1', practice: 'fake-1', reps: DEFAULT_REPS, classes: null, subject: 'spiro' };
+  // subject: a neutral default for everyone (a saved name, like Spiro's 'spiro', still wins below)
+  const d: Settings = { session: 's1', practice: 'fake-1', reps: DEFAULT_REPS, classes: null, subject: 'me' };
   try {
     const raw = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? 'null') as Partial<Settings> | null;
     if (!raw || typeof raw !== 'object') return d;

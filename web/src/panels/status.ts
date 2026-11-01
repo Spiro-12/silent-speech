@@ -51,6 +51,12 @@ function injectCss(id: string, css: string) {
   document.head.append(s);
 }
 
+/**
+ * Live but never connected: wait this long before saying "Can't reach the Mac app" (here and on the setup card),
+ * so it doesn't flash while connecting, or during the shell's 1.5 s live check for returning visitors.
+ */
+export const OFFLINE_AFTER_MS = 2500;
+
 /** 23 to 27 Hz (AirPods Pro 2 style) or 45 to 55 Hz (AirPods Pro 3 may stream at 50). */
 export const rateOk = (hz: number) => (hz >= 23 && hz <= 27) || (hz >= 45 && hz <= 55);
 const rateTone = (hz: number | null): Tone => (hz === null ? 'idle' : hz <= 0 ? 'bad' : rateOk(hz) ? 'good' : 'warn');
@@ -131,6 +137,7 @@ const panel: Panel = {
     const misses: { at: number; n: number }[] = []; // seq jumps seen by the browser, last 10 s
     let lastSeq: number | null = null;
     let failed = false; // live: a connection attempt failed or dropped since this source started
+    let sourceAt = performance.now();
 
     app.bus.on('conn', (c) => {
       conn = c;
@@ -141,7 +148,7 @@ const panel: Panel = {
     app.bus.on('status', (s) => { status = s; render(); });
     app.bus.on('invalid', () => { invalid++; render(); });
     app.bus.on('source', () => {
-      status = null; invalid = 0; lastSeq = null; failed = false;
+      status = null; invalid = 0; lastSeq = null; failed = false; sourceAt = performance.now();
       arrivals.length = 0; misses.length = 0;
       render();
     });
@@ -210,8 +217,8 @@ const panel: Panel = {
       else [tone, text] = ['good', kind === 'live' ? (status.simulated ? 'Streaming (simulated)' : 'Streaming from AirPods') : `Streaming ${kind} data`];
       setTone(head, tone);
       setText(headline, text);
-      // Live, not connected (after a failed try, so no flash while it connects): say what to do.
-      help.hidden = !(kind === 'live' && !open && failed);
+      // Live, not connected (after a failed try, and not in the first moments): say what to do.
+      help.hidden = !(kind === 'live' && !open && failed && now - sourceAt >= OFFLINE_AFTER_MS);
     }
 
     render();

@@ -7,6 +7,7 @@ import { startMockBridge, type MockBridge } from '../mock-bridge';
 import { REAL_S1, addRecorded, assertMockBridge, pageErrors, recognize } from './helpers';
 
 const ORIGIN = new URL(BASE).origin;
+const TOKEN = '0123456789abcdef0123456789abcdef'; // as in the Mac app's "Open dashboard" link (#pair=)
 const live = (port: number) => `./?mode=live&ws=${encodeURIComponent(`ws://127.0.0.1:${port}`)}`;
 const card = (page: Page) => page.locator('.card[data-panel=setup]');
 const top = (page: Page, panel: string) => page.locator(`.card[data-panel=${panel}]`).evaluate((el) => el.getBoundingClientRect().top);
@@ -92,7 +93,7 @@ test('live and connected: the setup card goes away and the checklist ticks itsel
   const port = await freePort();
   let bridge: MockBridge | null = null;
   try {
-    await page.goto(live(port));
+    await page.goto(`${live(port)}#pair=${TOKEN}`); // opened from the Mac app's link: paired
     await expect(card(page)).toHaveAttribute('data-view', 'offline');
 
     // The Mac app starts (real AirPods, not armed): the page connects by itself.
@@ -136,32 +137,67 @@ test('live and connected: the setup card goes away and the checklist ticks itsel
     await expect(page.getByTestId('setup-checklist')).not.toHaveAttribute('open', '');
     await expect(page.getByTestId('setup-summary')).toBeVisible();
 
-    // No nagging: Armed off again (4 of 5), and after a reload too, it stays folded.
+    // That fold happens once. After it, the checklist is the person's: Armed off (4 of 5) doesn't open it (no
+    // nagging), and once they open it, all done again doesn't shut it on them.
     bridge.setArmed(false);
     await expect(done(page, 'armed')).toHaveAttribute('data-done', '0');
     await expect(page.getByTestId('setup-checklist')).not.toHaveAttribute('open', '');
+    await page.getByTestId('setup-summary').click();
+    await expect(page.getByTestId('setup-checklist')).toHaveAttribute('open', '');
+    bridge.setArmed(true);
+    await expect(page.getByTestId('setup-count')).toHaveText('You’re all set');
+    await page.waitForTimeout(1200); // another status or two
+    await expect(page.getByTestId('setup-checklist')).toHaveAttribute('open', '');
+    await page.getByTestId('setup-summary').click(); // they fold it: it stays folded after a reload
+    await expect(page.getByTestId('setup-checklist')).not.toHaveAttribute('open', '');
+
     await page.evaluate(() => window.__ss.app.store.flush()); // every recording saved before the reload
     expect(await page.evaluate(() => window.__ss.app.store.health().error)).toBeNull();
-    await page.reload();
+    await page.reload(); // the address bar no longer has #pair= (the token is memory only)
     await expect(page.getByTestId('source-pill')).toHaveText('live · open');
     await expect(done(page, 'recorded')).toHaveAttribute('data-done', '1', { timeout: 15_000 });
     await expect(page.getByTestId('setup-checklist')).toBeVisible();
     await expect(page.getByTestId('setup-checklist')).not.toHaveAttribute('open', '');
-    // It still opens on a click.
-    await page.getByTestId('setup-summary').click();
+    // Reloaded, so not paired any more (every action would be refused): not "Connected", and it says how to fix it.
+    expect(await page.evaluate(() => window.__ss.app.pairToken)).toBeNull();
+    await expect(done(page, 'armed')).toHaveAttribute('data-done', '1'); // the Mac app is still armed
+    await expect(done(page, 'connected')).toHaveAttribute('data-done', '0');
+    await expect(done(page, 'connected')).toContainText('Open this page from the Mac app’s “Open dashboard” button');
+    await expect(page.getByTestId('setup-count')).not.toHaveText('You’re all set');
+    await page.getByTestId('setup-summary').click(); // it still opens on a click
     await expect(page.getByTestId('setup-checklist')).toHaveAttribute('open', '');
     await expect(done(page, 'connected')).toBeVisible();
 
     // The Mac app quits: the item unticks and the Connection panel says what to do (the checklist stays).
     await bridge.close();
     bridge = null;
-    await expect(done(page, 'connected')).toHaveAttribute('data-done', '0');
+    await expect(done(page, 'connected')).toContainText('Can’t reach the Mac app');
     await expect(page.getByTestId('status-help')).toBeVisible();
     await expect(card(page)).toHaveAttribute('data-view', 'checklist');
     expect(errors).toEqual([]);
   } finally {
     await bridge?.close();
   }
+});
+
+test('returning visitor whose Mac app is not running: no "can’t reach" flash during the live check before the replay', async ({ page }) => {
+  const port = await freePort();
+  await page.addInitScript(() => {
+    localStorage.setItem('ss.liveSeen', '1'); // used the Mac app before: the page tries live for 1.5 s first
+    const seen = { live: false, help: false, offline: false };
+    (window as unknown as { __seen: typeof seen }).__seen = seen;
+    setInterval(() => {
+      if (window.__ss?.app.source?.kind === 'live') seen.live = true;
+      if (document.querySelector<HTMLElement>('[data-testid=status-help]')?.hidden === false) seen.help = true;
+      if (document.querySelector<HTMLElement>('.card[data-panel=setup]')?.dataset.view === 'offline') seen.offline = true;
+    }, 10);
+  });
+  await page.goto(`./?ws=${encodeURIComponent(`ws://127.0.0.1:${port}`)}`);
+  await expect(page.getByTestId('source-pill')).toHaveText('replay · open');
+  await page.waitForTimeout(500);
+  expect(await page.evaluate(() => (window as unknown as { __seen: unknown }).__seen)).toEqual({ live: true, help: false, offline: false });
+  await expect(card(page)).toHaveAttribute('data-view', 'visitor');
+  await expect(page.getByTestId('status-help')).toBeHidden();
 });
 
 test('share previews: title, description, Open Graph and Twitter tags; og.png and the icons are served', async ({ page, request }) => {

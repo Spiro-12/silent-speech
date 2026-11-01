@@ -6,12 +6,11 @@
 import type { SourceKind } from '../../core/app';
 import type { StatusMsg } from '../../core/contracts';
 import type { Readiness } from '../result/model-source';
-import { rateOk } from '../status';
+import { OFFLINE_AFTER_MS, rateOk } from '../status';
+
+export { OFFLINE_AFTER_MS };
 
 export type SetupView = 'visitor' | 'offline' | 'checklist' | 'hidden';
-
-/** Live, never connected: wait this long before saying "Can't reach the Mac app" (no flash while it connects). */
-export const OFFLINE_AFTER_MS = 2500; // longer than the shell's 1.5 s live probe for returning visitors
 
 export function setupView(o: { source: SourceKind | null; connectedOnce: boolean; msSinceSource: number }): SetupView {
   if (o.source === 'replay' || o.source === 'fake') return 'visitor';
@@ -28,11 +27,12 @@ export interface CheckInput {
   status: StatusMsg | null; // latest status on this connection (null: none yet)
   recorded: Readiness; // takes recorded in this browser with real AirPods, per sentence
   ownModel: boolean; // the model on now is "your model"
+  paired: boolean; // this page has the Mac app's pairing token (memory only: gone after a reload)
 }
 
 const SIDE: Record<string, string> = { left: 'Left', right: 'Right' };
 
-export function checklist({ open, status: st, recorded, ownModel }: CheckInput): CheckItem[] {
+export function checklist({ open, status: st, recorded, ownModel, paired }: CheckInput): CheckItem[] {
   const live = open && !!st;
 
   // 1. Connected, AirPods streaming at a healthy rate (about 50 Hz, or 25 on older AirPods)
@@ -42,7 +42,9 @@ export function checklist({ open, status: st, recorded, ownModel }: CheckInput):
   else {
     const hz = Math.round(st.hz);
     const title = 'Connected';
-    if (st.headphones === 'unavailable') connected = { id: 'connected', done: false, title, detail: 'This Mac can’t read AirPods motion (needs macOS 14 or later)' };
+    // Without the token every action is refused, so it isn't really connected (a reload or a bookmark loses it).
+    if (!paired) connected = { id: 'connected', done: false, title, detail: 'Open this page from the Mac app’s “Open dashboard” button' };
+    else if (st.headphones === 'unavailable') connected = { id: 'connected', done: false, title, detail: 'This Mac can’t read AirPods motion (needs macOS 14 or later)' };
     else if (st.headphones !== 'connected') connected = { id: 'connected', done: false, title, detail: 'Put in your AirPods' };
     else if (st.auth !== 'authorized') connected = { id: 'connected', done: false, title, detail: 'Allow motion access for the Mac app' };
     else if (st.simulated) connected = { id: 'connected', done: false, title, detail: 'Simulate is on in the Mac app. Turn it off to use your AirPods' };
@@ -51,10 +53,10 @@ export function checklist({ open, status: st, recorded, ownModel }: CheckInput):
   }
 
   // 2. Which AirPod has the sensor
-  const side = live ? SIDE[st!.loc] : undefined;
+  const side = live && !st!.simulated ? SIDE[st!.loc] : undefined; // Simulate mode makes up a side
   const sensor: CheckItem = side
     ? { id: 'sensor', done: true, title: `Sensor: ${side} AirPod`, detail: 'Tip: record and use it with the same ear' }
-    : { id: 'sensor', done: false, title: 'Sensor AirPod', detail: live ? 'Not known yet' : 'Shows once the AirPods stream' };
+    : { id: 'sensor', done: false, title: 'Sensor AirPod', detail: !live ? 'Shows once the AirPods stream' : st!.simulated ? 'Shows once Simulate is off' : 'Not known yet' };
 
   // 3. Every sentence recorded 5+ times in this browser
   const rec: CheckItem = {

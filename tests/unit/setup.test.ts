@@ -21,7 +21,7 @@ describe('setupView', () => {
 describe('checklist', () => {
   const none = { ready: false, done: 0, total: 8 };
   const all = { ready: true, done: 8, total: 8 };
-  const base: CheckInput = { open: true, status: fakeStatus({ simulated: false, hz: 50 }), recorded: none, ownModel: false };
+  const base: CheckInput = { open: true, status: fakeStatus({ simulated: false, hz: 50 }), recorded: none, ownModel: false, paired: true };
   const byId = (i: CheckInput) => Object.fromEntries(checklist(i).map((c) => [c.id, c]));
 
   it('has the 5 steps in order', () => {
@@ -39,11 +39,18 @@ describe('checklist', () => {
     expect(byId({ ...base, status: null }).connected.done).toBe(false);
   });
 
+  it('connected: not without the pairing token (a reload or a bookmark loses it, and every action is refused)', () => {
+    const c = byId({ ...base, paired: false, status: fakeStatus({ simulated: false, hz: 50, armed: true }), recorded: all, ownModel: true });
+    expect(c.connected).toMatchObject({ done: false, detail: 'Open this page from the Mac app’s “Open dashboard” button' });
+    expect(checklist({ ...base, paired: false, recorded: all, ownModel: true }).every((i) => i.done)).toBe(false);
+  });
+
   it('sensor: left or right, with the same ear tip; unknown is not done', () => {
     expect(byId(base).sensor).toMatchObject({ done: true, title: 'Sensor: Left AirPod', detail: expect.stringContaining('same ear') });
     expect(byId({ ...base, status: fakeStatus({ simulated: false, loc: 'right' }) }).sensor.title).toBe('Sensor: Right AirPod');
     expect(byId({ ...base, status: fakeStatus({ simulated: false, loc: 'unknown' }) }).sensor.done).toBe(false);
     expect(byId({ ...base, open: false }).sensor.done).toBe(false); // only true while connected
+    expect(byId({ ...base, status: fakeStatus({ simulated: true, loc: 'left' }) }).sensor).toMatchObject({ done: false, detail: expect.stringContaining('Simulate') });
   });
 
   it('recorded: x of 8 done in this browser', () => {

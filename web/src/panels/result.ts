@@ -18,7 +18,7 @@ import { confetti } from './result/confetti';
 import { buildDemoModelJSON, type DemoBuilt } from './result/demo-build';
 import { DEMO_BUBBLE_MS, DEMO_NOT_SENT, DEMO_NO_TEXT, demoBubble, demoHolds, playAlarm } from './result/demo-screen';
 import {
-  MIN_REAL_CLASSES, MIN_TAKES_FOR_ACTIONS, actionReadiness, classCount, fetchPublicModel, fingerprint, modelTags, planModel, realClips,
+  MIN_REAL_CLASSES, MIN_TAKES_FOR_ACTIONS, actionReadiness, classCount, fetchPublicModel, fingerprint, planModel, realClips,
   type Provenance, type PublicModel, type Readiness,
 } from './result/model-source';
 import { ActionGuard, CONFIDENCE, clearsBar, type BlockReason, type Decision, type GuardInput, type Sent } from './result/rule';
@@ -33,6 +33,15 @@ const SPEAK_KEY = 'ss.result.speak';
 const HELP_FLASH_MS = 3000; // a replay shows the help moment as a red flash on the stage, this long
 const RING_C = 2 * Math.PI * 52; // ring circumference (r = 52 in a 120 viewBox)
 const DEMO_CLASS = 'ss-demo'; // on <html> while the demo screen is on (result.css hides everything else)
+
+type Tag = { kind: 'own' | 'preview'; n: number; fp: string } | { kind: 'public' | 'demo'; n: number };
+/**
+ * What this panel built each model from. Module private on purpose: only this file can say a model is "your
+ * model", the one kind the action rule lets run actions (rule.ts, not-own-model). Other panels only read it (isOwnModel).
+ */
+const TAGS = new WeakMap<Classifier, Tag>();
+/** Is this "your model" (made here from every sentence recorded 5+ times in this browser)? Read only. */
+export const isOwnModel = (m: Classifier | null | undefined): boolean => !!m && TAGS.get(m)?.kind === 'own';
 
 type StageState = 'idle' | 'listening' | 'thinking' | 'accepted' | 'probable' | 'unsure' | 'nomodel';
 type ChipState = 'ghost' | 'sending' | 'started' | 'done' | 'dry' | 'failed' | 'unknown';
@@ -106,7 +115,7 @@ const TEMPLATE = `
 
 class ResultPanel {
   private r: Record<string, HTMLElement> = {};
-  private tags = modelTags; // shared: the getting started checklist reads it too
+  private tags = TAGS;
   private gen = 0; // bumps cancel an in flight model load
   private loading: string | null = null;
   private failure: { why: 'missing' | 'error'; message: string } | null = null;
