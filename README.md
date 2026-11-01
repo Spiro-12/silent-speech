@@ -59,10 +59,10 @@ It is not dictation. It knows these 7 sentences and nothing else, and it has to 
 *By Spiro*
 
 Not everyone can use their voice. Some people lose it for a while after surgery, some lose it to an illness, and
-some just can't talk out loud where they are: a quiet office, a library, a baby asleep in the next room. Voice
-assistants do nothing for any of them.
+some just can't talk out loud where they are: a quiet office, a library, or next to a sleeping baby. Voice
+assistants need you to talk out loud.
 
-So I asked a simple question: **could the AirPods people already own understand a sentence you only mouth, for free?**
+So I asked a simple question: **could the AirPods people already own understand a sentence they only mouth, for free?**
 
 AirPods have a motion sensor for head tracking (it is what makes spatial audio follow your head), and Apple lets a Mac
 app read it. Research had already shown that the motion sensors in regular earbuds can pick up mouthed words. The
@@ -71,7 +71,7 @@ open source AirPods projects I found did head nods or counted chewing, not silen
 So I built it over one weekend, with Claude Code. Claude wrote, reviewed and tested the code. I did the parts that
 needed a person: wearing the AirPods, mouthing hundreds of sentences, clicking the macOS popups, and checking that my
 Mac really did each thing. It works well for me, on one ear, for 7 sentences. That is a first step, not a solution:
-it has to learn each person's mouth, and almost nobody else has tried it yet. It is open source so you can try it on
+it has to learn each person's mouth, and so far only I have tested it. Nobody who has lost their voice has tried it yet. It is open source so you can try it on
 your own mouth, see where it breaks, and make it better.
 
 ## Try it now in your browser
