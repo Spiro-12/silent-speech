@@ -12,6 +12,7 @@ struct SilentSpeechBridgeApp: App {
         Window("Silent Speech Bridge", id: "main") {
             MainWindowContent(bridge: bridge, appDelegate: appDelegate)
         }
+        .defaultSize(width: 520, height: 780) // macOS shrinks it to fit a small screen; the window scrolls
     }
 }
 

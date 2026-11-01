@@ -60,6 +60,7 @@ final class MotionStreamer: NSObject, ObservableObject, CMHeadphoneMotionManager
         statsTimer = timer
 
         if manager.isDeviceMotionAvailable {
+            lastRestart = ProcessInfo.processInfo.systemUptime // the watchdog gives a fresh start 5 s
             startRealUpdates()
             log.add("Waiting for AirPods head motion")
         } else {
@@ -255,6 +256,8 @@ final class MotionStreamer: NSObject, ObservableObject, CMHeadphoneMotionManager
     private func setHeadphones(_ state: HeadphoneState) {
         guard state != headphones else { return }
         headphones = state
+        // Just connected: give the motion 5 s to start before the watchdog steps in.
+        if state == .connected { lastRestart = ProcessInfo.processInfo.systemUptime }
         log.add("Headphones: \(state.rawValue)")
         onStateChange?()
     }
