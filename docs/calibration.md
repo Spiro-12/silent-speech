@@ -50,8 +50,9 @@ Mouth the words with no sound, as if someone were lip reading you from across a 
 The sensor mostly feels your **jaw** opening and closing (the rhythm of the syllables). Lips and tongue barely move
 your head, so "bat" and "pat" look the same to it. Bigger jaw movement gives a clearer signal.
 
-In Spiro's data, the session where he moved about **25% more** than usual scored **97.5%** on its own. His first
-session, with small movements (and on the other ear), was the hardest one to recognize.
+In Spiro's data, session 5, where he moved about **25% more** than usual, scored **98.3%** as a brand new session
+(trained on his other sessions). His first session, with small movements (and on the other ear), was the hardest one
+to recognize.
 
 Try to mouth each sentence the **same way every time**: same speed, same size.
 
