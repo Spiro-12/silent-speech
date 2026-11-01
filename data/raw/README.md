@@ -1,6 +1,6 @@
 # Spiro's real recordings
 
-AirPods Pro 3 on a Mac (SilentSpeechBridge), recorded with the dashboard's Record panel on Oct 31, 2026. Head and jaw motion only (`ss-dataset` v1, PROTOCOL §3): no audio, no personal info. Published with Spiro's OK.
+AirPods Pro 3 on a Mac (SilentSpeechBridge), recorded with the dashboard's Record panel on Oct 31, 2026. Head and jaw motion only (`ss-dataset` v1, [PROTOCOL §3](../../docs/dev/PROTOCOL.md#3-dataset-file-ss-dataset-v1)): no audio, no personal info. Published with Spiro's OK.
 
 | File | Session | Sensor bud | Clips |
 |---|---|---|---|
@@ -11,6 +11,8 @@ AirPods Pro 3 on a Mac (SilentSpeechBridge), recorded with the dashboard's Recor
 - 50 Hz, under 1% gaps. Head resting against a chair. Silent mouthing, jaw a bit exaggerated.
 - **`exclude.json`**: 18 `none` takes where Spiro mouthed "stay still" (old prompt wording). Every script skips them (`--exclude`); the raw files are never edited.
 - Later `none` takes are nods or swallows (the old prompt said "maybe swallow or nod"). From Phase 2 the prompt says "Keep your mouth closed and still. Don't say anything."
-- s1 used the right bud and s2/s3 the left, which is why bud normalization exists (PROTOCOL §5 step 0).
+- s1 used the right bud and s2/s3 the left, which is why bud normalization exists ([PROTOCOL §5](../../docs/dev/PROTOCOL.md#5-preprocessing-spec-v1-js-and-python-must-match-exactly) step 0).
 
 First results (DTW kNN, k = 1, before Phase 2 tuning): LOSO on s2 + s3 89.9% (8 classes, chance 12.5%); s1 on an s2 + s3 model 34% raw, 63% mirrored.
+
+Current results on these files: [ml/RESULTS.md](../../ml/RESULTS.md). Results that also use Spiro's later sessions (4 and 5, not published): [docs/results.md](../../docs/results.md).
