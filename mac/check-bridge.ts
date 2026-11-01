@@ -1,4 +1,4 @@
-// Security + protocol check for the running Mac app (SETUP.md step 4). Prints PASS / FAIL lines, exits 1 on any FAIL.
+// Security + protocol check for the running Mac app (docs/dev/mac-runbook.md step 4). Prints PASS / FAIL lines, exits 1 on any FAIL.
 // Run from the repo root (after `npm ci`):
 //   npx tsx mac/check-bridge.ts                          normal run against the app on 8765
 //   npx tsx mac/check-bridge.ts --expect-no-origin-open  when the app was launched with --allow-no-origin

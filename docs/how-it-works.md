@@ -119,8 +119,11 @@ take is **mirrored** into the left AirPod's frame: rotation rate becomes (x, -y,
 (-x, y, z). (They flip differently because acceleration is an ordinary arrow, while rotation is an axis with a
 direction of spin.)
 
-That lifted the same test to 63% to 84%. It helps a lot, but it does not make the ears equal: across Spiro's five
-sessions, a left ear model gets about 57% on the right ear. Hence the advice to
+That lifted the same test to 63% to 84% (depending on the settings). It helps a lot, but it does not make the ears
+equal. Trained on left ear sessions 2 to 5 instead of 2 and 3, the same right ear session scores only 57%. The likely
+reason is not the ear alone: session 1 was Spiro's first, with small movements and the old style of "nothing" takes,
+while sessions 4 and 5 were recorded the next day with bigger movements. Live, a 5 session left ear model got 11 of 16
+(69%) on the right ear. So the other ear lands somewhere between 57% and 84%, which is why the advice is to
 [record on the ear you use](calibration.md#1-pick-your-ear).
 
 ## Why you train your own

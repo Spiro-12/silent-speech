@@ -1,5 +1,5 @@
 // Speaks text with AVSpeechSynthesizer. It plays through the Mac's current sound output, so through the AirPods
-// when they are connected and chosen as the output (SETUP.md step 5.1). Main queue only.
+// when they are connected and chosen as the output (docs/dev/mac-runbook.md step 5.1). Main queue only.
 import AVFoundation
 import Foundation
 

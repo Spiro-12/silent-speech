@@ -27,11 +27,11 @@ to keep everything on your own Mac. This page lists exactly what happens, taken 
 | What | Where it lives | Who can see it |
 |---|---|---|
 | AirPods motion | Streamed from the Mac app to the dashboard tab, over `127.0.0.1` (your Mac talking to itself) | Only your Mac |
-| Your recorded takes | Your browser's storage for the dashboard's site (IndexedDB) | Only that browser on your Mac. Never uploaded |
+| Your recorded takes | Your browser's storage for the dashboard's site (IndexedDB) | That browser on your Mac. Never uploaded. Note: browsers share storage per site, so any page on `spiro-12.github.io` could read it. That is also why the pairing code is never stored there |
 | Exported files | Wherever you save them | Whoever you give them to |
 | Your text contact, music choice | `~/.silentspeech/actions.json` | Only your Mac user (file mode 600). The window shows the contact as `+61 •••• ••12` |
 | The pairing code | `~/.silentspeech/token`, the Open dashboard link, and the dashboard tab's memory | Only your Mac user |
-| The app's log | `~/Library/Logs/SilentSpeechBridge.log`, new each launch | Only your Mac user. Contacts show as the last 2 digits only |
+| The app's log | `~/Library/Logs/SilentSpeechBridge.log`, new each launch | Only your Mac user. Contacts show as the last 2 digits only. No pairing code, unless you start the app with the developer option `--print-pair-url` |
 | Your calendar | Read on your Mac, summarized by Apple's on device model | Never logged, never sent to the dashboard or anywhere else |
 
 More details:
@@ -40,8 +40,9 @@ More details:
 - **The dashboard is a static web page** hosted on GitHub Pages. There is no server behind it and no analytics in it.
   Like any website, GitHub serves the files. The page also loads Spiro's public model and the replay file from the
   same site.
-- **Exported takes** are motion only, plus the session name, the AirPods model, which ear, and the name in the
-  Record screen's "Your name" setting. Change that setting if you plan to share files.
+- **Exported takes** are motion only, plus the session name, the date and time of each take, a device name
+  ("AirPods"), which ear, and the name in Record > Settings ("Your name"). Change that name if you plan to share
+  files.
 - **Texts** are sent by the Messages app from your own Apple account, like any iMessage you send.
 
 ## Nothing runs until you say so
@@ -74,7 +75,8 @@ The Mac app runs a small local server at `ws://127.0.0.1:8765`. Three locks stan
    - The dashboard keeps the code **in that tab's memory only**: never in browser storage (which every page on the
      site shares). It removes it from the address bar right away and sends it with each action request.
    - The app checks the code before anything else and refuses a request with a wrong or missing code (`unpaired`).
-   - The app never shows the code in its window or writes it to its log.
+   - The app never shows the code in its window or writes it to its log, unless you start it with the developer
+     option `--print-pair-url`. Then the log file holds the link, code included, so never share that line.
 
 That is why you must open the dashboard from the app's button each time: a reloaded page has lost the code and cannot
 run actions (motion still shows).
@@ -109,7 +111,8 @@ The Mac app adds its own **cooldowns**: the same action cannot run again within 
   "Your Mac is sending the text". Only the phone that receives it can say it arrived.
 - **Help** plays an alarm, shows a red notice above every window, bounces the Dock icon, and texts your contact. It
   **never calls emergency services**. Do not rely on it in an emergency.
-- **The demo screen never sends texts.** It shows a text bubble marked "Demo: not sent" instead. See
+- **The demo screen never sends texts.** When one would have gone out, it shows a text bubble marked
+  "Demo: not sent" instead. See
   [Make it yours](make-it-yours.md#the-demo-screen).
 
 ## Too late, dropped, or no answer

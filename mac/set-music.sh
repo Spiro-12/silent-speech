@@ -8,7 +8,7 @@
 # library on shuffle. The app window's "Focus music…" button does the same without the repo.
 set -euo pipefail
 cd "$(dirname "$0")"
-command -v node >/dev/null || { echo "FAILED: node is missing (SETUP.md step 0.4)"; exit 1; }
+command -v node >/dev/null || { echo "FAILED: this script needs Node.js. Install it from https://nodejs.org (see docs/setup.md), or use the Focus music… button in the app window"; exit 1; }
 [ $# -eq 1 ] || { echo "Usage: ./set-music.sh \"<Music playlist name | music.apple.com link | spotify: URI>\""; exit 2; }
 SS_MUSIC="$1" node -e '
 const fs = require("fs"), os = require("os"), path = require("path");

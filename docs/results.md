@@ -21,23 +21,41 @@ sitting still with his head against a chair. Nobody else has been tested yet. Wi
 | Sessions | 5. One sitting each: 15 takes of each sentence and of "nothing", shuffled. |
 | Takes | 600 recorded, **582 used**. 18 were mislabeled and are excluded everywhere: "nothing" takes where Spiro mouthed the words "stay still" (from an old prompt). The raw files are never edited. |
 | Ears | Session 1 on the **right** AirPod, the other four on the **left**. |
+| When | Sessions 1 to 3 on one afternoon (Oct 31, 2026), about 15 minutes apart. Sessions 4 and 5 the next day. |
 | Published | Sessions 1 to 3, in [`data/raw/`](../data/raw/README.md) (motion only, no audio). Sessions 4 and 5 are not published. |
 
 ## Headline numbers
 
 All from Spiro's 5 sessions, with the dashboard's own model (DTW + kNN, the default settings).
 
+> **You cannot rerun these from this repo.** They use sessions 4 and 5, which are not published, and live tests on
+> Spiro's Mac. The numbers you can rerun are in [the published benchmark](#the-published-benchmark-3-sessions):
+> **88.2%** with settings chosen without the test session, 94.2% with settings tuned on the same sessions.
+
 | Test | Result |
 |---|---|
-| **New session, same ear.** Train on the other left ear sessions, test on the one left out. Repeat for each. | **97.3%** of takes: the top guess is right |
+| **New session, same ear.** Train on the other left ear sessions, test on the one left out. Repeat for each of the 4. | **97.3%** of takes: the top guess is right |
 | **At the bar texts need** (model accepts, 70% sure). Same test, 420 sentence takes. | **82.1%** of sentences act on the first try. **0 of 420** act wrongly |
-| **Across ears.** Train on the left ear, test on the right ear. | **About 57%** |
+| **Sessions recorded after the settings were tuned.** Session 5 (trained on sessions 1 to 4) and session 4 (trained on 1 to 3 and 5). | **98.3%** and **97.5%** top guess right. **0 wrong** actions in both |
+| **Across ears.** Train on the left ear, test on the right ear session. | **57% to 84%**, depending on the sessions (see below) |
 | **Live, prompted, left ear.** 16 takes, the sentence to say chosen by the page, on Spiro's Mac. | **16 of 16** right. 13 of the 14 sentences acted on the first try. **0 wrong** |
-| **Same model, but macOS switched to the right ear** | 11 of 16, often "Not sure" |
-| **More sessions help.** Test on session 5. | Trained on session 4 only: **92%**. Trained on sessions 1 to 4: **98%** |
+| **Live, right ear.** Same 5 session model, after macOS switched the sensor to the right AirPod. | **11 of 16** (69%), often "Not sure" |
+| **More sessions help.** Test on session 5. | Trained on session 4 only: **92%**. Trained on sessions 1 to 4: **98.3%** |
 
-Also seen: the session where Spiro mouthed with about **25% more movement** than usual scored best of all his sessions,
-**97.5%**. Bigger mouthing gives a clearer signal.
+**A note on optimism.** The default settings (like how many neighbors vote) were tuned with leave one session out on
+sessions 1 to 3. So the 97.3% and the 82.1% / 0 of 420 include test sessions (2 and 3) that helped pick those
+settings, which flatters them a little. Sessions 4 and 5 were recorded after the tuning, so they are the clean test:
+98.3% and 97.5%, with no wrong actions.
+
+**Across ears.** The model is trained on left ear sessions and tested on session 1, the only right ear session
+(mirrored, see [How it works](how-it-works.md#the-bud-mirror)):
+
+- Trained on sessions 2 and 3: **83.8%** (with the tuned settings; 67.1% with settings chosen without session 1).
+- Trained on sessions 2 to 5: **57.1%**. The likely reason: session 1 was Spiro's first, with small movements and the
+  old style of "nothing" takes, while sessions 4 and 5 were recorded the next day with bigger movements.
+- Live, the 5 session model got 11 of 16 (69%) on the right ear.
+
+So the other ear works somewhere between 57% and 84%, depending on the sessions. Record on the ear you will use.
 
 What this means for you: record on the ear you will use, record more than one session, and mouth clearly. See
 [Train it on your mouth](calibration.md).
@@ -72,16 +90,23 @@ ear, sessions 2 and 3 the left. 342 takes after the exclusion list.
 The left column is the honest one: the settings (like how many neighbors vote) were picked without looking at the
 session being tested. Tuning on all three sessions looks about 6 points better than it really is.
 
-**Other models, same test** (settings fixed or borrowed, not tuned on these folds):
+**Other models, same test:**
 
-| Model | Accuracy |
-|---|---:|
-| DTW + kNN (settings chosen without the test session) | 88.2% |
-| MiniRocket | 84.8% (83.9% to 88.3% over 5 random seeds) |
-| Small 1D neural network | 79.2% |
+| Model | Preprocessing fixed before the data | Preprocessing from the DTW sweep |
+|---|---:|---:|
+| DTW + kNN | 81.9% | 88.2% chosen without the test session, 94.2% tuned on all 3 |
+| MiniRocket | 76.3% | 84.8% (83.9% to 88.3% over 5 random seeds) |
+| Small 1D neural network | 76.6% | 79.2% |
 
-**Is it luck?** Each model was rerun 500 times with the training labels shuffled. The shuffled models score about
-12.5% (chance), and not one of the 500 reached the real score (p = 0.002).
+The right column borrows the preprocessing (96 points, each take normalized on its own) that the DTW sweep picked on
+these same sessions, so MiniRocket's and the network's numbers there share some of that optimism. The left column
+uses settings fixed before any of this data existed.
+
+**Is it luck?** Three models were rerun 500 times each with the training labels shuffled: DTW with the tuned settings
+(94.2%), DTW with the settings fixed before the data (81.9%), and MiniRocket with its fixed settings (76.3%). The
+shuffled models score about 12.5% (chance), and not one of the 500 reached the real score for any of them
+(p = 0.002). The other MiniRocket and network rows were not luck tested. This test shows the models are far above
+chance; it does not measure how much tuning flatters a number (that is what the 88.2% is for).
 
 **"Nothing" takes:** at the old 85% bar, 0 of 27 "nothing" takes were mistaken for a sentence.
 
@@ -101,10 +126,11 @@ Two bars decide what may run (see [How it works](how-it-works.md#how-sure-is-it)
 - **Texts** need the model to accept the guess at **70%**.
 - **Harmless actions** (volume, music, calendar, the demo line) may run from **50%**.
 
-First, on the 3 published sessions, an 85% bar gave 61.6% of sentences acted on, 0 wrong and 0 "nothing" takes
-mistaken. At 50%: 85.4% acted on, 1.0% wrong.
+First, on the 3 published sessions, an 85% bar gave 61.6% of sentences acted on (55.1% with settings chosen without
+the test session), 0 wrong and 0 "nothing" takes mistaken. At 50%: 85.4% acted on, 1.0% wrong.
 
-Then, with all 5 sessions (420 left ear sentence takes), leave one session out:
+Then, with all 5 sessions (420 left ear sentence takes), leave one session out (with the optimism noted
+[above](#headline-numbers)):
 
 | Bar | Act on the first try | Act wrongly |
 |---|---:|---:|
@@ -126,5 +152,5 @@ or plays music.
   something will confuse it.
 - **Push to talk.** You hold Space while you mouth. There is no automatic detection yet.
 - **One AirPods model tested** (AirPods Pro 3, about 50 readings a second). Older AirPods send about half as many.
-- The first three sessions were recorded the same afternoon. Accuracy on another day is better covered by sessions 4
-  and 5, which are not published.
+- The first three sessions were recorded the same afternoon. Accuracy on another day is covered by sessions 4 and 5
+  (the next day), which are not published.

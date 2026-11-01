@@ -22,7 +22,8 @@ This matters a lot. Your jaw moves each ear differently, and a model learns one 
 
 - A model trained on Spiro's **left** ear got **16 of 16** right in a live test with the left ear.
 - The same model got **11 of 16** when macOS switched to the **right** ear, and it often said "Not sure".
-- Trained on the left ear and tested on the right ear over all his takes: about **57%**.
+- Trained on left ear sessions and tested on his one right ear session: **57% to 84%**, depending on which sessions
+  were used for training ([details](results.md#headline-numbers)).
 
 The page already mirrors right ear motion to look like left ear motion, which helps (see
 [How it works](how-it-works.md#the-bud-mirror)), but it does not close the gap.
@@ -49,7 +50,8 @@ Mouth the words with no sound, as if someone were lip reading you from across a 
 The sensor mostly feels your **jaw** opening and closing (the rhythm of the syllables). Lips and tongue barely move
 your head, so "bat" and "pat" look the same to it. Bigger jaw movement gives a clearer signal.
 
-In Spiro's data, the session where he moved about **25% more** than usual scored best: **97.5%** on its own.
+In Spiro's data, the session where he moved about **25% more** than usual scored **97.5%** on its own. His first
+session, with small movements (and on the other ear), was the hardest one to recognize.
 
 Try to mouth each sentence the **same way every time**: same speed, same size.
 

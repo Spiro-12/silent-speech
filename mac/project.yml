@@ -1,6 +1,6 @@
 # XcodeGen spec for the Silent Speech Mac bridge. Run `xcodegen` in this folder to make SilentSpeechBridge.xcodeproj.
 # Build: xcodebuild -project SilentSpeechBridge.xcodeproj -target SilentSpeechBridge -configuration Debug build
-# (CI adds CODE_SIGNING_ALLOWED=NO; Spiro's Mac adds CODE_SIGN_IDENTITY="SilentSpeech Local", see SETUP.md.)
+# (CI adds CODE_SIGNING_ALLOWED=NO; Spiro's Mac adds CODE_SIGN_IDENTITY="SilentSpeech Local", see docs/dev/mac-runbook.md.)
 name: SilentSpeechBridge
 options:
   bundleIdPrefix: com.spiro

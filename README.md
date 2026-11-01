@@ -102,9 +102,14 @@ Honest numbers, from one person (Spiro), with AirPods Pro 3. Guessing at random 
 | Test | Result |
 |---|---|
 | New session, same ear (trained on his other sessions) | **97.3%** of takes guessed right |
+| The two sessions recorded after the settings were tuned | **98.3%** and **97.5%**, 0 wrong actions |
 | At the bar texts need (70% sure) | **82.1%** of sentences act on the first try, **0 wrong** out of 420 |
 | Live test on the left ear, 16 prompted takes | **16 of 16** right, 13 of 14 sentences acted on the first try, 0 wrong |
-| Trained on the left ear, tested on the right ear | about **57%**: the ear matters a lot |
+| Trained on the left ear, tested on the right ear | **57% to 84%** depending on the sessions (11 of 16 live): the ear matters a lot |
+
+These use two sessions that are not published and live tests on Spiro's Mac, so they cannot be rerun from this repo.
+The benchmark you **can** rerun, on the 3 published sessions in [`data/raw/`](data/raw/README.md): **88.2%** with
+settings chosen without the test session (94.2% with settings tuned on those same sessions).
 
 Limits: 7 fixed sentences, trained per person and per ear, not free dictation, and not yet tested on other people.
 Full numbers and how they were measured: [docs/results.md](docs/results.md).

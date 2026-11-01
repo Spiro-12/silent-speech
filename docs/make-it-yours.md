@@ -116,8 +116,10 @@ What is different on the demo screen:
 - **Texts are never sent from it.** Not "Text mom", not "Call me back later", not "I need help". When a text would
   have gone out, the screen shows a text bubble instead, with **Demo: not sent** under it, for 5 seconds. Any action
   that is not on the harmless list is held back the same way.
-- **"I need help right now"** shows the red alert and plays about one second of alarm beeps in the browser, with
-  **Demo: no text sent**.
+- **"I need help right now"**: when a real help text would have gone out (live, Armed, paired, your own model, every
+  check passes), the red alert says **Demo: no text sent** and the browser plays about one second of alarm beeps.
+  If the guess is sure enough but another check fails (for example, the app is not Armed), the red alert shows the
+  usual **Would: …** line and makes no sound.
 - **Harmless actions still run** on the Mac when every check passes: volume, focus music, calendar, the demo line.
 - **Every sentence it shows is spoken out loud** by the browser, "Probably" ones too, so the video has sound. The one
   exception is the demo line when the Mac is already saying it.

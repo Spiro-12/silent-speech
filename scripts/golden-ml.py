@@ -1,6 +1,6 @@
 """Golden values for the JS preprocessing + DTW (PROTOCOL.md §5 incl. step 0 bud normalization, §6), made with real scipy.
 
-Run from 01-silent-speech/:
+Run from the repo root:
     uv run --no-project --with scipy==1.18.1 --with numpy==2.5.4 python -I scripts/golden-ml.py
 Writes tests/unit/ml/golden.json. tests/unit/ml/golden.test.ts checks the JS against it to 1e-6.
 

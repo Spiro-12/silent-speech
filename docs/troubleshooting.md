@@ -42,7 +42,9 @@ should say `Listening on ws://127.0.0.1:8765`. If it says the port is in use, se
 [Port 8765 is in use](#port-8765-is-in-use).
 
 **2. Did you open the page from the app?** Click **Open dashboard** in the app window. A page opened any other way
-shows Spiro's replay instead of your AirPods (the top left pill says `replay`, not `live`).
+(a bookmark, a reload, or typing the address) is not paired. If this browser has reached the Mac app before, such a
+page still tries the app first and shows your motion, but cannot run actions. If it cannot reach the app, it shows
+Spiro's replay instead: the pill at the top right of the page says `replay`, not `live`.
 
 **3. Is it Chrome, and did Chrome allow it?** Other browsers may block a secure page from reaching `127.0.0.1`. Use
 Chrome. If Chrome asked to let the page access apps on this device and you clicked **Block**: click the icon to the
@@ -133,7 +135,7 @@ macOS asks once per kind of access. To change an answer:
 
 | Access | Where to turn it on | Or reset it in Terminal, then reopen the app and try again |
 |---|---|---|
-| **Motion** (AirPods motion) | System Settings > Privacy & Security > **Motion & Fitness** > Silent Speech Bridge | `tccutil reset All com.spiro.SilentSpeechBridge` (resets every permission of the app) |
+| **Motion** (AirPods motion) | System Settings > Privacy & Security, then **Motion & Fitness** > Silent Speech Bridge. If you don't see it, look for Silent Speech Bridge in the Privacy & Security list | `tccutil reset All com.spiro.SilentSpeechBridge` (resets every permission of the app) |
 | **Messages, Music, Spotify** | System Settings > Privacy & Security > **Automation** > Silent Speech Bridge > Messages (or Music, Spotify) | `tccutil reset AppleEvents com.spiro.SilentSpeechBridge` |
 | **Calendar** | System Settings > Privacy & Security > **Calendars** > Silent Speech Bridge > **Full Access** | `tccutil reset Calendar com.spiro.SilentSpeechBridge` |
 | **Chrome reaching the app** | In Chrome: the icon left of the address > Site settings > allow local network / apps on this device | |
@@ -199,4 +201,6 @@ Use **Export JSON** after every session. **Import JSON** brings an export back.
 
 [Open an issue](https://github.com/Spiro-12/silent-speech/issues/new/choose) with the bug report form. It asks for your
 macOS version, AirPods model, which AirPod is the sensor, the rate the page shows, and your browser. The last lines of
-the app's Log box help a lot. They never show your full number or the pairing code, but read them before you paste.
+the app's **Log box** (in its window) help a lot. The Log box never shows your full number or the pairing code, but
+read the lines before you paste. (The log *file* holds the pairing link if you started the app with the developer
+option `--print-pair-url`: never share that line.)
