@@ -121,15 +121,23 @@ class SetupPanel {
     void app.store.ready.then(() => { this.restored = true; this.refreshRecorded(); });
 
     const details = this.r.check as HTMLDetailsElement;
-    details.addEventListener('toggle', () => {
-      if (details.open === this.wantOpen) return; // this panel opened or closed it
-      this.wantOpen = details.open; // the person did: remember their choice
-      this.prefs.open = details.open;
-      this.savePrefs();
-    });
-    // Focus left on the summary would turn the next Space press into a toggle instead of push to talk.
     const summary = details.querySelector('summary')!;
-    summary.addEventListener('click', () => setTimeout(() => summary.blur(), 0));
+    // The person's choice is saved during the click itself. The toggle event only comes later (a separate task),
+    // and a reload or a closed tab right after the click would drop it, and with it their choice.
+    summary.addEventListener('click', () => {
+      this.remember(!details.open); // the click opens or closes it right after this listener
+      setTimeout(() => summary.blur(), 0); // focus left here would turn the next Space press into a toggle
+    });
+    details.addEventListener('toggle', () => {
+      if (details.open !== this.wantOpen) this.remember(details.open); // opened some other way (find in page)
+    });
+  }
+
+  /** The person opened or closed the checklist: that wins from now on, also after a reload. */
+  private remember(open: boolean) {
+    this.wantOpen = open;
+    this.prefs.open = open;
+    this.savePrefs();
   }
 
   private refreshRecorded() {

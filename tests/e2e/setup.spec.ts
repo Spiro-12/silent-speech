@@ -12,6 +12,13 @@ const live = (port: number) => `./?mode=live&ws=${encodeURIComponent(`ws://127.0
 const card = (page: Page) => page.locator('.card[data-panel=setup]');
 const top = (page: Page, panel: string) => page.locator(`.card[data-panel=${panel}]`).evaluate((el) => el.getBoundingClientRect().top);
 const done = (page: Page, id: string) => page.getByTestId(`check-${id}`);
+const ITEMS = ['connected', 'sensor', 'recorded', 'model', 'armed'];
+/** Waits until every checklist item is ticked (each one, so a failure names the item that isn't). */
+async function allTicked(page: Page) {
+  for (const id of ITEMS) await expect(done(page, id), `${id} ticked`).toHaveAttribute('data-done', '1');
+}
+/** The person's open / folded choice as saved for the next visit. */
+const savedOpen = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem('ss.setup') ?? '{}') as { open?: boolean }).open);
 
 /** A port with nothing listening on it (a bridge took it, then let it go): "the Mac app isn't running". */
 async function freePort(): Promise<number> {
@@ -132,7 +139,8 @@ test('live and connected: the setup card goes away and the checklist ticks itsel
 
     // Armed in the Mac app: all done, and the checklist folds itself away.
     bridge.setArmed(true);
-    await expect(done(page, 'armed')).toHaveAttribute('data-done', '1');
+    await allTicked(page);
+    await expect(page.getByTestId('setup-checklist')).toHaveAttribute('data-all', '1');
     await expect(page.getByTestId('setup-count')).toHaveText('You’re all set');
     await expect(page.getByTestId('setup-checklist')).not.toHaveAttribute('open', '');
     await expect(page.getByTestId('setup-summary')).toBeVisible();
@@ -144,12 +152,16 @@ test('live and connected: the setup card goes away and the checklist ticks itsel
     await expect(page.getByTestId('setup-checklist')).not.toHaveAttribute('open', '');
     await page.getByTestId('setup-summary').click();
     await expect(page.getByTestId('setup-checklist')).toHaveAttribute('open', '');
+    expect(await savedOpen(page)).toBe(true); // saved by the click itself
     bridge.setArmed(true);
+    await allTicked(page);
     await expect(page.getByTestId('setup-count')).toHaveText('You’re all set');
     await page.waitForTimeout(1200); // another status or two
     await expect(page.getByTestId('setup-checklist')).toHaveAttribute('open', '');
     await page.getByTestId('setup-summary').click(); // they fold it: it stays folded after a reload
     await expect(page.getByTestId('setup-checklist')).not.toHaveAttribute('open', '');
+    // Saved before the click returns (not on the later toggle event, which a reload right after would drop).
+    expect(await savedOpen(page)).toBe(false);
 
     await page.evaluate(() => window.__ss.app.store.flush()); // every recording saved before the reload
     expect(await page.evaluate(() => window.__ss.app.store.health().error)).toBeNull();
