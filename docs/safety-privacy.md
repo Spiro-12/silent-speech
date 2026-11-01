@@ -41,8 +41,8 @@ More details:
   Like any website, GitHub serves the files. The page also loads Spiro's public model and the replay file from the
   same site.
 - **Exported takes** are motion only, plus the session name, the date and time of each take, a device name
-  ("AirPods"), which ear, and the name in Record > Settings ("Your name"). Change that name if you plan to share
-  files.
+  ("AirPods"), which ear, and the name in Record > Settings ("Your name"). The name is saved with each take when you
+  record it, so change it before you record if you plan to share files.
 - **Texts** are sent by the Messages app from your own Apple account, like any iMessage you send.
 
 ## Nothing runs until you say so

@@ -2,6 +2,15 @@
 
 Thanks for helping. Bug reports, fixes, docs and test results on AirPods other than AirPods Pro 3 are all welcome.
 
+**No coding needed:** the most useful thing you can share is your own recordings, so we can see if it works for
+people other than Spiro. Open a [Share your recordings](https://github.com/Spiro-12/silent-speech/issues/new?template=share_recordings.yml)
+issue and attach the file from **Export JSON**.
+
+**Looking for something to code?** Start with the issues labeled
+[good first issue](https://github.com/Spiro-12/silent-speech/labels/good%20first%20issue) or
+[help wanted](https://github.com/Spiro-12/silent-speech/labels/help%20wanted).
+Be kind: see the [code of conduct](CODE_OF_CONDUCT.md). Security problems: see [SECURITY.md](SECURITY.md).
+
 ## The layout
 
 | Folder | What |
@@ -104,9 +113,9 @@ cd ml && uv sync && uv run pytest -q
   without the person's OK.
 - **Plain words in the UI.** Short sentences, no jargon, as if for a 12 year old.
 
-Recorded your own sessions and happy to share them, so results can cover more than one person? Open an issue first.
+Recorded your own sessions and happy to share them? Use the [Share your recordings](https://github.com/Spiro-12/silent-speech/issues/new?template=share_recordings.yml) form.
 
 ## Reporting bugs
 
-Use the [bug report form](https://github.com/Spiro-12/silent-speech/issues/new/choose). For security problems, see the
-end of [Safety and privacy](docs/safety-privacy.md#what-this-does-not-protect-against).
+Use the [bug report form](https://github.com/Spiro-12/silent-speech/issues/new/choose). For security problems, see
+[SECURITY.md](SECURITY.md) (report privately, not in a public issue).
