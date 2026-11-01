@@ -37,7 +37,7 @@ All from Spiro's 5 sessions, with the dashboard's own model (DTW + kNN, the defa
 | **New session, same ear.** Train on the other left ear sessions, test on the one left out. Repeat for each of the 4. | **97.3%** of takes: the top guess is right |
 | **At the bar texts need** (model accepts, 70% sure). Same test, 420 sentence takes. | **82.1%** of sentences act on the first try. **0 of 420** act wrongly |
 | **Sessions recorded after the settings were tuned.** Session 5 (trained on sessions 1 to 4) and session 4 (trained on 1 to 3 and 5). | **98.3%** and **97.5%** top guess right. **0 wrong** actions in both |
-| **Across ears.** Train on the left ear, test on the right ear session. | **57% to 84%**, depending on the sessions (see below) |
+| **Across ears.** Train on the left ear, test on the right ear session. | about **57% to 69%** (see below) |
 | **Live, prompted, left ear.** 16 takes, the sentence to say chosen by the page, on Spiro's Mac. | **16 of 16** right. 13 of the 14 sentences acted on the first try. **0 wrong** |
 | **Live, right ear.** Same 5 session model, after macOS switched the sensor to the right AirPod. | **11 of 16** (69%), often "Not sure" |
 | **More sessions help.** Test on session 5. | Trained on session 4 only: **92%**. Trained on sessions 1 to 4: **98.3%** |
@@ -45,17 +45,18 @@ All from Spiro's 5 sessions, with the dashboard's own model (DTW + kNN, the defa
 **A note on optimism.** The default settings (like how many neighbors vote) were tuned with leave one session out on
 sessions 1 to 3. So the 97.3% and the 82.1% / 0 of 420 include test sessions (2 and 3) that helped pick those
 settings, which flatters them a little. Sessions 4 and 5 were recorded after the tuning, so they are the clean test:
-98.3% and 97.5%, with no wrong actions.
+98.3% and 97.5%, with no wrong actions. (The 70% bar for texts was picked after seeing all 5 sessions, but no wrong
+ones showed up even at 60%.)
 
 **Across ears.** The model is trained on left ear sessions and tested on session 1, the only right ear session
 (mirrored, see [How it works](how-it-works.md#the-bud-mirror)):
 
 - Trained on sessions 2 and 3: **83.8%** (with the tuned settings; 67.1% with settings chosen without session 1).
-- Trained on sessions 2 to 5: **57.1%**. The likely reason: session 1 was Spiro's first, with small movements and the
-  old style of "nothing" takes, while sessions 4 and 5 were recorded the next day with bigger movements.
+- Trained on sessions 2 to 5: **57.1%**. The likely reason: session 1 was Spiro's first, with small movements, while
+  session 5 had about 25% more movement.
 - Live, the 5 session model got 11 of 16 (69%) on the right ear.
 
-So the other ear works somewhere between 57% and 84%, depending on the sessions. Record on the ear you will use.
+So the other ear works at about 57% to 69% (84% only with settings tuned on that same session). Record on the ear you will use.
 
 What this means for you: record on the ear you will use, record more than one session, and mouth clearly. See
 [Train it on your mouth](calibration.md).

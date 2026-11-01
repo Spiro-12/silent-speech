@@ -22,8 +22,8 @@ This matters a lot. Your jaw moves each ear differently, and a model learns one 
 
 - A model trained on Spiro's **left** ear got **16 of 16** right in a live test with the left ear.
 - The same model got **11 of 16** when macOS switched to the **right** ear, and it often said "Not sure".
-- Trained on left ear sessions and tested on his one right ear session: **57% to 84%**, depending on which sessions
-  were used for training ([details](results.md#headline-numbers)).
+- Trained on left ear sessions and tested on his one right ear session: about **57% to 69%** (84% only with
+  settings tuned on that same session; [details](results.md#headline-numbers)).
 
 The page already mirrors right ear motion to look like left ear motion, which helps (see
 [How it works](how-it-works.md#the-bud-mirror)), but it does not close the gap.
