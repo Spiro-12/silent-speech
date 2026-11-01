@@ -157,7 +157,7 @@ test('records 3 sentences × 3 takes as fake practice, exports a valid file, and
   const { name, ds } = await exportFile(page);
   expect(name).toMatch(/^ss-dataset-fake-1-\d{8}-\d{4}\.json$/);
   expect(validateDataset(ds)).toEqual([]);
-  expect(ds).toMatchObject({ format: 'ss-dataset', v: 1, session: 'fake-1', subject: 'spiro', source: 'fake', hz: 25, device: { model: 'AirPods Pro 3', loc: 'left' } });
+  expect(ds).toMatchObject({ format: 'ss-dataset', v: 1, session: 'fake-1', subject: 'spiro', source: 'fake', hz: 25, device: { model: 'AirPods', loc: 'left' } });
   expect(ds.classes).toEqual(classes);
   expect(ds.clips.map((c) => c.label)).toEqual(said);
   for (const c of ds.clips) {
@@ -349,7 +349,7 @@ test('finding 3: real takes need live AirPods; simulated data goes to a separate
   const { name, ds } = await exportFile(page);
   expect(name).toMatch(/^ss-dataset-s1-/);
   expect(validateDataset(ds)).toEqual([]);
-  expect(ds).toMatchObject({ session: 's1', subject: 'spiro', source: 'airpods', hz: 50, device: { model: 'AirPods Pro 3', loc: 'right' } });
+  expect(ds).toMatchObject({ session: 's1', subject: 'spiro', source: 'airpods', hz: 50, device: { model: 'AirPods', loc: 'right' } });
   expect(ds.clips).toHaveLength(2);
 
   // a practice name can't be used for real takes

@@ -28,7 +28,8 @@ import {
 
 const SETTINGS_KEY = 'ss.enroll';
 const DEFAULT_REPS = 15;
-const DEVICE_MODEL = 'AirPods Pro 3';
+// The Mac app's hello and status don't say which AirPods these are (PROTOCOL §2), so exports say just 'AirPods'.
+const DEVICE_MODEL = 'AirPods';
 const EVAL_DEBOUNCE_MS = 600;
 const NO_CLIP_MS = 2200; // the shell gives up waiting for the release pad after 1.5 s
 const SIGNAL_STALE_MS = 1500;
@@ -672,7 +673,7 @@ class EnrollPanel {
     } else if (state === 'replay') {
       r.kicker.textContent = 'Watching a replay';
       r.prompt.textContent = 'Recording needs AirPods';
-      r.hint.textContent = 'Open this page while the Silent Speech Mac app is running (or add ?mode=fake to practice with fake data).';
+      r.hint.textContent = 'Open this page from the Mac app’s “Open dashboard” button. To practice with fake data, press “Try it yourself” at the top.';
     } else if (state === 'connecting') {
       r.kicker.textContent = '';
       r.prompt.textContent = 'Connecting…';

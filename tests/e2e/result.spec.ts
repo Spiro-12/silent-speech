@@ -8,16 +8,13 @@ import type { ClassDef, Dataset, Prediction } from '../../web/src/core/contracts
 import * as ml from '../../web/src/ml/index';
 import { clearsBar } from '../../web/src/panels/result/rule';
 import { startMockBridge, type MockBridge, type MockBridgeOpts } from '../mock-bridge';
+import { REAL, REAL_S1, addImported, addRecorded, assertMockBridge, pageErrors, recognize } from './helpers';
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), 'utf8');
 const classes = JSON.parse(read('../../shared/classes.json')) as ClassDef[];
 const synthetic = JSON.parse(read('../../shared/fixtures/dataset.synthetic.json')) as Dataset;
 /** Stand in for Track F's public model (live / replay without your recordings): trained on the synthetic fixture. */
 const PUBLIC_MODEL = JSON.stringify(ml.train(synthetic.clips).toJSON());
-/** The same clips, as if they were real AirPods recordings: 8 sentences, 15 takes each (5 per session). */
-const REAL: Dataset = { ...synthetic, source: 'airpods', session: 'real' };
-/** Session s1 only: every sentence 5 times (enough for "your model"), and light on the Record panel's live accuracy check. */
-const REAL_S1: Dataset = { ...REAL, clips: REAL.clips.filter((c) => c.session === 's1') };
 const PRACTICE: Dataset = { ...synthetic, source: 'fake', session: 'fake-1' };
 
 const ORIGIN = new URL(BASE).origin;
@@ -25,19 +22,8 @@ const TOKEN = '0123456789abcdef0123456789abcdef';
 const OTHER_TOKEN = 'ffffffffffffffffffffffffffffffff';
 const sentence = (id: string) => classes.find((c) => c.id === id)!.sentence;
 
-function pageErrors(page: Page) {
-  const errors: string[] = [];
-  page.on('pageerror', (e) => errors.push(e.message));
-  return errors;
-}
-
 async function servePublicModel(page: Page) {
   await page.route('**/models/templates.json', (r) => r.fulfill({ body: PUBLIC_MODEL, contentType: 'application/json' }));
-}
-
-async function recognize(page: Page) {
-  await page.getByTestId('mode-toggle').click();
-  await expect.poll(() => page.evaluate(() => window.__ss.app.mode)).toBe('classify');
 }
 
 /**
@@ -68,25 +54,6 @@ const pageNow = (page: Page) => page.evaluate(() => performance.now());
 const pageWait = async (page: Page, since: number, ms: number) => {
   await expect.poll(() => page.evaluate((s) => performance.now() - s, since), { intervals: [100], timeout: ms + 10_000 }).toBeGreaterThanOrEqual(ms);
 };
-
-/** Actions may only ever go to a mock. */
-async function assertMockBridge(page: Page) {
-  await expect.poll(() => page.evaluate(() => window.__ss.app.lastHello?.app ?? null)).toBe('MockBridge');
-}
-
-/** Adds clips as if recorded in this browser with real AirPods (meta origin 'recorded'), like the Record panel does. */
-const addRecorded = (page: Page, ds: Dataset) => page.evaluate(async (ds) => {
-  const store = window.__ss.app.store;
-  await store.ready;
-  for (const c of ds.clips) {
-    store.add({ ...c, session: c.session ?? ds.session }, { source: 'airpods', subject: 'spiro', device: { model: 'AirPods Pro 3', loc: 'left' }, hz: 25, origin: 'recorded' });
-  }
-}, ds);
-/** Imports a dataset file (meta origin 'imported'). */
-const addImported = (page: Page, ds: Dataset) => page.evaluate(async (ds) => {
-  await window.__ss.app.store.ready;
-  window.__ss.app.store.load(ds);
-}, ds);
 
 /** Live page on its own mock bridge; clips in the store (default: all 8 sentences recorded here); Recognize mode on. */
 async function livePage(

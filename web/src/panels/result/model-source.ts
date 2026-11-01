@@ -17,7 +17,7 @@
 //   real data (or in fake mode), but it never counts as yours.
 import excludeJson from '../../../../data/raw/exclude.json';
 import type { SourceKind } from '../../core/app';
-import type { Clip, DatasetClip, DtwKnnModelJSON } from '../../core/contracts';
+import type { Classifier, Clip, DatasetClip, DtwKnnModelJSON } from '../../core/contracts';
 import type { ClipMeta } from '../../store';
 
 /** Clip ids every training script skips (PROTOCOL §3, data/raw/exclude.json). */
@@ -73,6 +73,16 @@ export function actionReadiness(recorded: { label: string }[], classIds: string[
 }
 
 export type Provenance = 'own' | 'preview' | 'public' | 'demo' | 'other';
+
+/** What the Recognize screen built a model from. `fp`: the training set's fingerprint. */
+export type ModelTag = { kind: 'own' | 'preview'; n: number; fp: string } | { kind: 'public' | 'demo'; n: number };
+/**
+ * Tags for the models the Recognize screen made (set before it calls app.setModel). Shared, so other panels
+ * (the getting started checklist) can tell "your model" apart. A model it didn't make has no tag.
+ */
+export const modelTags = new WeakMap<Classifier, ModelTag>();
+/** Is this "your model" (every sentence recorded 5+ times in this browser): the only kind that may run actions. */
+export const isOwnModel = (m: Classifier | null | undefined): boolean => !!m && modelTags.get(m)?.kind === 'own';
 export type Plan = 'own' | 'preview' | 'keep' | 'public' | 'demo';
 
 /** Minimum number of classes with real clips before we train a preview model. */
