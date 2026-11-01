@@ -54,6 +54,8 @@ jobs:
           rm -rf build
           ./build.sh 2>&1 | tee /tmp/build.log || { grep -E "error:" /tmp/build.log | head -20 | sed 's/^/::error::/'; exit 1; }
           test -x build/Debug/SilentSpeechBridge.app/Contents/MacOS/SilentSpeechBridge
+          test -f build/Debug/SilentSpeechBridge.app/Contents/Resources/AppIcon.icns
+          iconutil -c iconset -o /tmp/AppIcon.iconset SilentSpeechBridge/AppIcon.icns && ls /tmp/AppIcon.iconset
       - if: steps.check.outputs.has == 'true'
         name: Release build (build.sh --release, universal, what release.yml ships)
         working-directory: mac

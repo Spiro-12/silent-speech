@@ -58,6 +58,9 @@ sed -e "s/\$(EXECUTABLE_NAME)/$NAME/g" \
 if grep -q '\$(' "$APP/Contents/Info.plist"; then echo "FAILED: unreplaced \$(...) in Info.plist"; exit 1; fi
 plutil -lint "$APP/Contents/Info.plist" >/dev/null
 printf 'APPL????' > "$APP/Contents/PkgInfo"
+# The app icon (mac/SilentSpeechBridge/AppIcon.icns, made from the dashboard's favicon design).
+mkdir -p "$APP/Contents/Resources"
+cp SilentSpeechBridge/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 
 # Debug symbols must not sit inside the signed bundle.
 for d in "$APP"/Contents/MacOS/*.dSYM; do [ -e "$d" ] && mv "$d" "build/$CONFIG/"; done
