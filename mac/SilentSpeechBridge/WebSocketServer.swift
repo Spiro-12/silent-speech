@@ -61,6 +61,8 @@ final class WebSocketServer: ObservableObject {
     private let pairing: Pairing
     private let log: LogStore
     private let appVersion: String
+    /// ProtocolV1.allowedOrigins plus the extra ones in ~/.silentspeech/config.json (read once, at launch).
+    private let allowedOrigins: Set<String>
     private var listener: NWListener?
     private var clients: [ObjectIdentifier: Client] = [:]
     private var lastRun: [String: TimeInterval] = [:] // per action, shared by all connections
@@ -80,6 +82,7 @@ final class WebSocketServer: ObservableObject {
         self.pairing = pairing
         self.log = log
         self.appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
+        self.allowedOrigins = LocalConfig.allowedOrigins(log: log)
     }
 
     func start() {
@@ -214,7 +217,7 @@ final class WebSocketServer: ObservableObject {
             return false
         }
         let origin = header.value.trimmingCharacters(in: .whitespaces)
-        if ProtocolV1.allowedOrigins.contains(origin) { return true }
+        if allowedOrigins.contains(origin) { return true }
         let shown = String(origin.unicodeScalars.filter { $0.value >= 0x21 && $0.value < 0x7f }.map(Character.init).prefix(80))
         log.add("Blocked a website: \(shown)")
         return false

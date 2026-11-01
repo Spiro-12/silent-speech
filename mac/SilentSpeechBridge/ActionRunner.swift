@@ -1,7 +1,7 @@
 // Runs the action a paired dashboard asks for (PROTOCOL.md §2). Not Armed: a dry run, nothing happens.
 // Armed: the real thing. Settings come from ~/.silentspeech/actions.json (never in the repo; the contact is written
-// by mac/set-contact.sh). Texts only ever go to the `to` contacts in that file. Every real action is logged, with
-// contacts masked to the last 2 digits. Main queue only.
+// by the window's "Text contact…" button or mac/set-contact.sh, never by the WebSocket). Texts only ever go to the
+// `to` contacts in that file. Every real action is logged, with contacts masked to the last 2 digits. Main queue only.
 import AppKit
 import EventKit
 import Foundation
@@ -91,6 +91,10 @@ final class ActionRunner: ObservableObject {
     static let calendarMaxBusy: TimeInterval = 60
 
     @Published private(set) var helpNotice: HelpNotice? = nil
+    /// The window's Settings lines: where texts go ("+61 •••• ••12", never the whole number) and what focus music
+    /// plays. Set on every (re)load of actions.json.
+    @Published private(set) var contactShown = "not set"
+    @Published private(set) var musicShown = "not set"
     /// Called when `help` raises its alarm (true) and when the notice is dismissed (false). BridgeModel uses it
     /// to bring the app forward and show the floating help panel.
     var onHelpNotice: ((Bool) -> Void)?
@@ -131,8 +135,9 @@ final class ActionRunner: ObservableObject {
         configLoaded = true
         configData = data
         configs = [:]
+        defer { updateShown() }
         guard let data = data else {
-            log.add("No ~/.silentspeech/actions.json: texts have no contact (run mac/set-contact.sh), the rest uses defaults")
+            log.add("No ~/.silentspeech/actions.json: texts have no contact (click Text contact… in the window), the rest uses defaults")
             return
         }
         guard let all = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else {
@@ -151,6 +156,17 @@ final class ActionRunner: ObservableObject {
         log.add("Loaded actions.json: \(configs.keys.sorted().joined(separator: ", "))")
         let contacts = ActionRunner.textingActions.map { "\($0) → \(contactSummary(configs[$0]?.to))" }
         log.add("Contacts: \(contacts.joined(separator: ", "))")
+    }
+
+    /// The window's lines. Texts: one masked number when all 3 texts go to the same one, else one per text.
+    private func updateShown() {
+        let shown = ActionRunner.textingActions.map { ActionRunner.windowMask(configs[$0]?.to) }
+        if Set(shown).count == 1, let first = shown.first {
+            contactShown = first
+        } else {
+            contactShown = zip(ActionRunner.textingActions, shown).map { pair in "\(pair.0) \(pair.1)" }.joined(separator: ", ")
+        }
+        musicShown = ActionRunner.musicSummary(configs["focus_music"])
     }
 
     private func contactSummary(_ raw: String?) -> String {
@@ -310,12 +326,12 @@ final class ActionRunner: ObservableObject {
         let raw = config.to?.trimmingCharacters(in: .whitespaces) ?? ""
         guard !raw.isEmpty else {
             refuse(action, "No contact set for \(action)", error: "no_contact",
-                   logDetail: "No contact set for \(action) (run mac/set-contact.sh)", reply)
+                   logDetail: "No contact set for \(action) (click Text contact… in the app window)", reply)
             return
         }
         guard let to = ActionRunner.cleanContact(raw) else {
             refuse(action, "The contact for \(action) must start with + and the country code", error: "bad_contact",
-                   logDetail: "The contact for \(action) must start with + and the country code (run mac/set-contact.sh)", reply)
+                   logDetail: "The contact for \(action) must start with + and the country code (click Text contact… in the app window)", reply)
             return
         }
         guard !someoneWaits(for: ActionRunner.messagesBundleID) else {
@@ -880,6 +896,27 @@ final class ActionRunner: ObservableObject {
         if contact.contains("@") { return "•••@•••" }
         let digits = contact.filter { $0.isASCII && $0.isNumber }
         return "••" + String(digits.suffix(2))
+    }
+
+    /// For the window: "+61 •••• ••12" (country code and last 2 digits), "not set", or why it can't be used.
+    static func windowMask(_ raw: String?) -> String {
+        guard let raw = raw, !raw.trimmingCharacters(in: .whitespaces).isEmpty else { return "not set" }
+        guard let clean = cleanContact(raw) else { return "not usable (it needs + and the country code)" }
+        let digits = clean.dropFirst()
+        let codeLength = (digits.hasPrefix("1") || digits.hasPrefix("7")) ? 1 : 2
+        return "+\(digits.prefix(codeLength)) •••• ••\(digits.suffix(2))"
+    }
+
+    /// For the window: what focus_music plays.
+    static func musicSummary(_ config: ActionConfig?) -> String {
+        guard let config = config else { return "not set (Apple Music's Pure Focus playlist)" }
+        if config.kind == .spotify {
+            return "Spotify " + (cleanText(config.uri) ?? "Deep Focus playlist")
+        }
+        var link = "Apple Music's Pure Focus playlist"
+        if let url = cleanText(config.url), url != defaultAppleMusicURL { link = "the Apple Music link \(url)" }
+        if let playlist = cleanText(config.playlist) { return "your playlist \"\(playlist)\", else \(link)" }
+        return link
     }
 
     /// Masks the configured contact and anything that looks like a phone number (5 or more digits, maybe with

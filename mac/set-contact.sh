@@ -1,9 +1,10 @@
 #!/bin/bash
-# Asks Spiro for his own mobile number in a macOS box ON THE MAC, shows it back for a Yes / No check, and only on Yes
+# Asks for your own mobile number in a macOS box ON THE MAC, shows it back for a Yes / No check, and only on Yes
 # writes it as the contact ("to") of text_mom, call_back and help in ~/.silentspeech/actions.json (mode 600).
 # The number never goes in a command line (only in variables and the environment), a chat or the repo: the script
 # prints only its last 2 digits. Other entries in the file are kept; with no file yet it starts from
 # actions.example.json. 3 tries (a bad number or a No counts as one), at most about 9 minutes in all.
+# The app window's "Text contact…" button does the same without the repo (SilentSpeechBridge/ActionSettings.swift).
 # Usage (SETUP.md Phase 2, step P4): ./set-contact.sh      (run it with a 10 minute timeout)
 set -euo pipefail
 cd "$(dirname "$0")"
