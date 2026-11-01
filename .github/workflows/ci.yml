@@ -54,6 +54,13 @@ jobs:
           rm -rf build
           ./build.sh 2>&1 | tee /tmp/build.log || { grep -E "error:" /tmp/build.log | head -20 | sed 's/^/::error::/'; exit 1; }
           test -x build/Debug/SilentSpeechBridge.app/Contents/MacOS/SilentSpeechBridge
+      - if: steps.check.outputs.has == 'true'
+        name: Release build (build.sh --release, universal, what release.yml ships)
+        working-directory: mac
+        run: |
+          set -o pipefail
+          SIGN_IDENTITY=- ./build.sh --release 2>&1 | tee /tmp/build-release.log || { grep -E "error:" /tmp/build-release.log | head -20 | sed 's/^/::error::/'; exit 1; }
+          lipo build/Release/SilentSpeechBridge.app/Contents/MacOS/SilentSpeechBridge -verify_arch arm64 x86_64
       - if: steps.check.outputs.has != 'true'
         run: echo "No Mac app yet, skipping."
 

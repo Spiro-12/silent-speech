@@ -1,4 +1,7 @@
-// The one window: AirPods state, live rate, dashboard connection, toggles, the help notice and the last log lines.
+// The one window: the 3 steps to get started, AirPods state, live rate, dashboard connection, toggles, the text contact
+// and focus music settings, the help notice and the last log lines.
+import AppKit
+import Combine
 import SwiftUI
 
 struct ContentView: View {
@@ -16,6 +19,20 @@ struct ContentView: View {
 
             if let notice = runner.helpNotice {
                 HelpBanner(notice: notice) { runner.dismissHelp() }
+            }
+
+            GroupBox("Get started") {
+                VStack(alignment: .leading, spacing: 6) {
+                    StepRow(number: 1, text: "Put in your AirPods.", done: motion.headphones == .connected)
+                    StepRow(number: 2, text: motionStepText, done: motion.auth == .authorized)
+                    StepRow(number: 3, text: "Click Open dashboard below. It opens in your browser, paired with this app.",
+                            done: server.clientCount > 0)
+                    Text(verbatim: "No AirPods? Turn on Simulate motion. Nothing real happens until Armed is on.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(4)
             }
 
             GroupBox("AirPods") {
@@ -52,6 +69,21 @@ struct ContentView: View {
                     Toggle("Simulate motion (no AirPods needed)", isOn: $motion.simulate)
                     Toggle("Armed (let actions really run)", isOn: $server.armed)
                     Toggle("Allow non browser clients (dev only)", isOn: $server.allowNonBrowserClients)
+                    // Same as mac/set-contact.sh and mac/set-music.sh, for people without the repo.
+                    HStack(spacing: 8) {
+                        Button("Text contact…") { ActionSettings.askContact(runner: runner, log: log) }
+                        Text(verbatim: "Texts go to: \(runner.contactShown)")
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    HStack(spacing: 8) {
+                        Button("Focus music…") { ActionSettings.askMusic(runner: runner, log: log) }
+                        Text(verbatim: "Plays: \(runner.musicShown)")
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(4)
@@ -67,11 +99,23 @@ struct ContentView: View {
                         }
                     }
                 }
-                .frame(minHeight: 160)
+                .frame(minHeight: 120)
             }
         }
         .padding(16)
         .frame(minWidth: 480, minHeight: 640)
+        // Picks up actions.json changes made outside the window (for example with mac/set-contact.sh).
+        .onAppear { runner.reloadIfChanged() }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            runner.reloadIfChanged()
+        }
+    }
+
+    private var motionStepText: String {
+        switch motion.auth {
+        case .authorized, .notDetermined: return "Allow Motion access when macOS asks."
+        case .denied, .restricted: return "Allow Motion access: it is off. Turn it on in System Settings > Privacy & Security."
+        }
     }
 
     private var pairingText: String {
@@ -128,6 +172,23 @@ struct HelpBanner: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.red.opacity(0.18))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+/// One step of "Get started", with a small dot: green when done, orange while still to do.
+private struct StepRow: View {
+    let number: Int
+    let text: String
+    let done: Bool
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Circle()
+                .fill(done ? Color.green : Color.orange)
+                .frame(width: 8, height: 8)
+            Text(verbatim: "\(number). \(text)")
+            Spacer(minLength: 0)
+        }
     }
 }
 

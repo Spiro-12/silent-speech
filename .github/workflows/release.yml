@@ -1,0 +1,137 @@
+# The Mac app as a download for people without Xcode or the repo: universal (Apple silicon + Intel), ad hoc signed,
+# zipped. Built with mac/build.sh --release (Command Line Tools path, no Xcode project).
+# - Push a tag like v0.2.0: a GitHub Release for that tag with SilentSpeechBridge-macOS.zip (+ its .sha256) and the
+#   SHA-256 in the notes. The docs link to the newest one at
+#   https://github.com/Spiro-12/silent-speech/releases/latest/download/SilentSpeechBridge-macOS.zip
+# - Run it by hand (workflow_dispatch) on a branch: the zip is only a workflow artifact, no release.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  mac:
+    name: Mac app (universal zip)
+    runs-on: macos-latest
+    env:
+      ZIP: SilentSpeechBridge-macOS.zip
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Version from the tag
+        id: version
+        run: |
+          set -euo pipefail
+          V=""
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            V="${GITHUB_REF_NAME#v}"
+            if [[ ! "$V" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+              echo "::error::Release tags must look like v1.2.3 (got $GITHUB_REF_NAME)"
+              exit 1
+            fi
+          fi
+          echo "app=$V" >> "$GITHUB_OUTPUT"
+
+      - name: Build (build.sh --release, universal, ad hoc signed)
+        working-directory: mac
+        env:
+          SIGN_IDENTITY: "-"
+          APP_VERSION: ${{ steps.version.outputs.app }}
+        run: |
+          set -o pipefail
+          ./build.sh --release 2>&1 | tee /tmp/build.log || { grep -E "error:" /tmp/build.log | head -20 | sed 's/^/::error::/'; exit 1; }
+
+      - name: Sanity checks (universal, signature, usage strings)
+        working-directory: mac/build/Release
+        run: |
+          set -euo pipefail
+          APP=SilentSpeechBridge.app
+          BIN="$APP/Contents/MacOS/SilentSpeechBridge"
+          PLIST="$APP/Contents/Info.plist"
+          lipo -info "$BIN"
+          lipo "$BIN" -verify_arch arm64 x86_64
+          codesign -dv --verbose=2 "$APP" > /tmp/codesign.txt 2>&1
+          cat /tmp/codesign.txt
+          grep -q "Signature=adhoc" /tmp/codesign.txt
+          codesign --verify --strict --verbose=2 "$APP"
+          codesign -d --entitlements - "$APP" > /tmp/entitlements.txt 2>&1
+          grep -q "com.apple.security.app-sandbox" /tmp/entitlements.txt
+          plutil -lint "$PLIST"
+          for KEY in NSMotionUsageDescription NSAppleEventsUsageDescription NSCalendarsFullAccessUsageDescription; do
+            VALUE=$(/usr/libexec/PlistBuddy -c "Print :$KEY" "$PLIST")
+            [ -n "$VALUE" ] || { echo "::error::$KEY is empty in Info.plist"; exit 1; }
+            echo "$KEY: $VALUE"
+          done
+          echo "Version: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PLIST")"
+
+      - name: Zip and SHA-256
+        id: zip
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/out"
+          rm -rf "$OUT" && mkdir -p "$OUT"
+          ditto -c -k --keepParent mac/build/Release/SilentSpeechBridge.app "$OUT/$ZIP"
+          cd "$OUT"
+          shasum -a 256 "$ZIP" > "$ZIP.sha256"
+          SHA=$(awk '{print $1}' "$ZIP.sha256")
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "SHA-256: $SHA"
+          # The zip must unpack into an app whose signature still checks out.
+          mkdir unzipped
+          ditto -x -k "$ZIP" unzipped
+          codesign --verify --strict --verbose=2 unzipped/SilentSpeechBridge.app
+          rm -rf unzipped
+
+      - name: Workflow artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: SilentSpeechBridge-macOS
+          path: |
+            ${{ runner.temp }}/out/SilentSpeechBridge-macOS.zip
+            ${{ runner.temp }}/out/SilentSpeechBridge-macOS.zip.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: GitHub Release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+          SHA: ${{ steps.zip.outputs.sha }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/out"
+          # Between the markers: what this workflow writes. A re-run replaces only that part of the notes.
+          {
+            echo "<!-- download:start -->"
+            echo "## Download"
+            echo ""
+            echo "**[$ZIP]($REPO_URL/releases/download/$TAG/$ZIP)**: the Mac app (Silent Speech Bridge), for macOS 14 or newer, Apple silicon and Intel."
+            echo ""
+            echo "SHA-256: \`$SHA\`"
+            echo ""
+            echo "To check the download: \`shasum -a 256 ~/Downloads/$ZIP\` must print the same."
+            echo ""
+            echo "The app is ad hoc signed, not notarized by Apple, so macOS blocks the first open. Open System Settings > Privacy & Security and click Open Anyway (on macOS 14 you can also right click the app and choose Open)."
+            echo "<!-- download:end -->"
+          } > notes.md
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            # A release made by hand (or an earlier run): keep its own notes, replace the download part.
+            gh release upload "$TAG" "$ZIP" "$ZIP.sha256" --clobber
+            gh release view "$TAG" --json body --jq .body | sed '/<!-- download:start -->/,/<!-- download:end -->/d' > notes-old.md
+            printf '%s\n\n%s\n' "$(cat notes-old.md)" "$(cat notes.md)" > notes-all.md
+            gh release edit "$TAG" --notes-file notes-all.md
+          else
+            gh release create "$TAG" "$ZIP" "$ZIP.sha256" --title "Silent Speech $TAG" --notes-file notes.md
+          fi

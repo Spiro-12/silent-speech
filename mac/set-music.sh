@@ -1,11 +1,11 @@
 #!/bin/bash
 # Sets what focus_music plays in ~/.silentspeech/actions.json, touching only that entry and never printing the rest
-# of the file (it holds Spiro's number). One argument:
+# of the file (it holds the texts' phone number). One argument:
 #   ./set-music.sh "Focus"                                       a playlist in the Music library (Apple Music)
 #   ./set-music.sh "https://music.apple.com/.../playlist/..."    an Apple Music link (or music://...)
 #   ./set-music.sh "spotify:playlist:<id>"  or an open.spotify.com link: use Spotify instead
 # Apple Music: a library playlist name is tried first, then the link (default: a public focus playlist), then the
-# library on shuffle.
+# library on shuffle. The app window's "Focus music…" button does the same without the repo.
 set -euo pipefail
 cd "$(dirname "$0")"
 command -v node >/dev/null || { echo "FAILED: node is missing (SETUP.md step 0.4)"; exit 1; }
