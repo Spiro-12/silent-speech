@@ -24,9 +24,10 @@ works, what the numbers say, and where it is weak. Written for ML and sensing re
   (8 classes, chance 12.5%) from the AirPods IMU, read through Apple's public `CMHeadphoneMotionManager` at about
   50 Hz. No audio, no camera.
 - **Model.** Multivariate DTW (Sakoe-Chiba band) with distance weighted kNN (k = 3) on 6 high passed channels, plus a
-  confidence score built to reject unknown or still inputs. It runs in the browser at about 13 ms per clip.
-- **Accuracy (one subject).** Leave one session out over 5 sessions on the same ear: **98.1%** (468/477, 95% CI 96.5
-  to 99.0). On the 3 published sessions with hyperparameters chosen inside the cross validation: **88.2%**. A label
+  confidence score built to reject unknown or still inputs. Inference takes about 13 ms per clip in the JS
+  implementation.
+- **Accuracy (one subject).** Leave one session out, tested on the 4 left ear sessions (each trained on the other 4,
+  mirrored right ear s1 included): **98.1%** (468/477, 95% CI 96.5 to 99.0). On the 3 published sessions with hyperparameters chosen inside the cross validation: **88.2%**. A label
   shuffle test gives p = 0.002.
 - **Safe actions.** At the confidence bar used for texts (0.70), 81% of sentences act on the first try with **0 wrong
   actions out of 339 fired**, and 0 of 57 "nothing" takes fire.
@@ -77,7 +78,8 @@ flowchart LR
 ```
 
 - **Sensor stream.** `CMDeviceMotion` gives attitude (quaternion), `rotationRate`, `userAcceleration`, gravity and
-  `sensorLocation` (left or right bud). On AirPods Pro 3 we measured 49 to 50.5 Hz with 0.2 to 0.4% gaps. macOS
+  `sensorLocation` (left or right bud). On AirPods Pro 3 it runs at about 50 Hz: in the published s1 to s3 the per clip rate is 47.5 to 50 Hz (median 50) and
+  under 0.1% of intervals are over 60 ms, and the Mac app's own status read 49 to 50.5 Hz during the live runs. macOS
   chooses which bud streams.
 - **Bridge.** A small macOS app (Network.framework WebSocket on loopback only) streams samples, enforces an origin
   allowlist and a pairing token stored on the Mac (passed to the page in the link the app opens), and runs actions only
@@ -86,8 +88,8 @@ flowchart LR
   macOS 26).
 - **Dashboard.** Vite and plain TypeScript, a static site on GitHub Pages. Spacebar push to talk cuts a clip from a
   ring buffer with 0.3 s of padding on each side. Recording, training and inference all happen in the browser, and
-  recordings stay in IndexedDB. A Python benchmark ([`ml/`](../ml/)) implements the same pipeline and agrees with the JS
-  version clip for clip.
+  recordings stay in IndexedDB. A Python benchmark ([`ml/`](../ml/)) implements the same pipeline and gives the same
+  confusion matrices as the JS version.
 - **Action gating.** Harmless actions fire from confidence 0.5 and up. Texts need the model's own accept at 0.70 or
   more. Only a "full own model" may act: every class, including "nothing", with at least 5 takes recorded in this
   browser. Cooldowns are 3 s, and 30 s for texts. Requests older than 60 s are dropped. Details:
@@ -128,8 +130,8 @@ length (press to release) is 3.7 s (s5: 3.1 s).
    remove posture drift.
 4. **Resample** to L = 96 points.
 5. **Normalize per clip.** z-score each channel by its own mean and std, with a std floor of 0.5 × the training median
-   of that channel's per clip std. This cancels loudness differences between sessions and was worth about 10 points
-   of LOSO accuracy over global normalization.
+   of that channel's per clip std. This cancels loudness differences between sessions and was worth about 6 to 9
+   points of LOSO accuracy over global normalization (+8.7 at the Phase 1 settings, +5.6 at the final ones).
 
 ### Classifier
 
@@ -151,14 +153,15 @@ accepted    = label ≠ none and confidence ≥ threshold
 The two virtual competitors make confidence fall when a clip is far from every template, not only when two classes
 are close. That stops small or partial models from accepting random motion. With per clip normalization, Σq² is about
 channels × L = 576, so "stillness" sits near 720. On the public model dRef is 421, so "unknown" sits near 716. Models
-with fewer than 2 classes or an undefined dRef fall back to a scale free softmax capped at threshold / 2, so they can
-never accept. Full specification: [PROTOCOL.md](dev/PROTOCOL.md) §6 and the header of
+with fewer than 2 classes, or a dRef that is undefined or 0, fall back to a scale free softmax capped at threshold / 2, so they can
+never accept. When the label is "nothing", the stillness share also counts toward its separation. Full
+specification: [PROTOCOL.md](dev/PROTOCOL.md) §6 and the header of
 [`web/src/ml/knn.ts`](../web/src/ml/knn.ts).
 
 ### Hyperparameters
 
-L 96, band 0.05, k 3, per clip normalization and the 0.85 model threshold were picked by a 768 configuration LOSO
-sweep on s1 to s3. For an honest number, a nested version picks the configuration without the test session
+L 96, band 0.05, k 3 and per clip normalization were picked by a 768 configuration LOSO sweep on s1 to s3. The 0.85
+model threshold came from a separate threshold run on the same sessions (`eval-dtw --thresholds`). For an honest number, a nested version picks the configuration without the test session
 (section 5.1). s4 and s5 were recorded after tuning, so they are clean test sessions for the defaults. The 0.70 bar
 for texts was picked later, after seeing all 5 sessions.
 
@@ -179,8 +182,8 @@ takes within a session are correlated, and there are only 5 sessions.
 | 1D CNN | 76.6% | 51.4% | 91.5% | 84.2% | fixed before the data |
 | 1D CNN, L96 + per clip norm | 79.2% | 54.3% | 92.3% | 88.3% | borrows the DTW sweep's preprocessing |
 
-MiniRocket and the CNN vary by a few points across seeds (MiniRocket L96: 83.9 to 88.3% over seeds 0 to 4), so DTW's
-lead over MiniRocket is within that noise. In the label shuffle test (500 shuffles inside each LOSO fold), shuffled
+MiniRocket and the CNN vary by a few points across seeds (MiniRocket L96: 83.9 to 88.3% over seeds 0 to 4), so the nested
+DTW's lead over MiniRocket is within that noise. In the label shuffle test (500 shuffles inside each LOSO fold), shuffled
 models score 12.5% ± 2.9 against a real 94.2%, so p = 0.002. Untuned DTW and MiniRocket also get p = 0.002. Full
 tables: [`ml/RESULTS.md`](../ml/RESULTS.md).
 
@@ -195,6 +198,9 @@ tables: [`ml/RESULTS.md`](../ml/RESULTS.md).
 | s5 (after tuning) | left | 118 / 120 | 98.3% |
 | **Left ear pooled** | | **468 / 477** | **98.1%** [96.5, 99.0] |
 | All 5 pooled | | 528 / 582 | 90.7% [88.1, 92.8] |
+
+Each fold trains on all 4 other sessions, including the mirrored right ear s1. [Results](results.md) and the README
+quote 97.3% (464/477) for a variant that trains on left ear sessions only.
 
 Confusion over the 4 left ear folds (rows true, columns predicted). Most of the few errors fall into "nothing", which
 is the safe direction.
@@ -255,7 +261,7 @@ the confidence is at or above the bar.
 | 0.90 | 46.7% | 0 | 0 | |
 
 This table trains each fold on all other sessions, including the mirrored right ear s1. [Results](results.md) quotes
-82.1% coverage at 0.70 for a variant that trains on left ear sessions only.
+82.1% coverage at 0.70 and 65.5% at 0.85 for the variant that trains on left ear sessions only.
 
 ### 5.6 Across ears
 
@@ -277,7 +283,8 @@ mouthing". With one right ear session, the ear effect and the session effect can
   13 of 14 sentences would act and 0 would be wrong.
 - The same protocol on the right ear: 11/16, with the misses mostly ending as "not sure" or "nothing" rather than a
   wrong action.
-- Inference: about 13 ms per clip in the browser with 342 templates (DTW cost grows with templates × L × band). The JS
+- Inference: about 13 ms per clip in the JS implementation (LOSO folds of about 230 templates; 15.6 ms with 341), timed
+  in Node. DTW cost grows with templates × L × band. The JS
   and Python implementations produce identical confusion matrices.
 
 ## 6. Threats to validity
@@ -320,10 +327,14 @@ Methods: [PROTOCOL.md](dev/PROTOCOL.md) §5 and §6. JS model: [`web/src/ml/`](.
 
 ```bash
 npm ci
-npx tsx scripts/eval-dtw.ts data/raw/ss-dataset-*.json --exclude data/raw/exclude.json --protocol loso
+npx tsx scripts/eval-dtw.ts data/raw/ss-dataset-*.json --exclude data/raw/exclude.json --protocol loso --no-write
 npx tsx scripts/eval-dtw.ts data/raw/ss-dataset-*.json --exclude data/raw/exclude.json --nested
 npx tsx scripts/eval-dtw.ts data/raw/ss-dataset-*.json --exclude data/raw/exclude.json --thresholds
-cd ml && uv sync && uv run python -m silent.bench --real --model all --protocol all
+
+cd ml && uv sync --extra cnn                                      # the CNN needs torch
+uv run python -m silent.bench --real --model all --protocol all --seeds 5
+uv run python -m silent.bench --real --model dtw-py --phase1 --protocol loso xbud
+uv run python -m silent.bench --real --model minirocket cnn --L 96 --norm clip --variant L96-clip --protocol loso xbud --seeds 5
 uv run python -m silent.bench --real --model dtw-py minirocket --protocol loso --permutations 500
 ```
 
