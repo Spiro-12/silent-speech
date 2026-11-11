@@ -106,8 +106,8 @@ length (press to release) is 3.7 s (s5: 3.1 s).
 | s1 | Oct 31, 16:21 | right | 105 | 15 | yes |
 | s2 | Oct 31, 16:37 | left | 117 | 3 | yes |
 | s3 | Oct 31, 16:54 | left | 120 | 0 | yes |
-| s4 | Nov 1, morning | left | 120 | 0 | not yet |
-| s5 | Nov 1, 09:17 | left | 120 | 0 | not yet |
+| s4 | Nov 1, 07:35 | left | 120 | 0 | yes (day2) |
+| s5 | Nov 1, 09:17 | left | 120 | 0 | yes (day2) |
 | **Total** | 2 days | 4 left, 1 right | **582** | 18 | |
 
 - **Exclusions.** In s1 and s2, some "nothing" takes were the words "stay still" mouthed by mistake (the old prompt).
@@ -115,8 +115,8 @@ length (press to release) is 3.7 s (s5: 3.1 s).
 - **Label drift in "nothing".** In s1 to s3 the remaining "nothing" takes include nods and swallows. From s4 on, the
   prompt said "mouth closed and still", so "nothing" became nearly motionless. That is a known shift.
 - **Format.** One JSON per session: for each clip its id, label, session, press and release times, padding, ear and
-  raw samples (t, q, rr, ua, g). The schema is in [PROTOCOL.md](dev/PROTOCOL.md) §3. The published sessions are in
-  [`data/raw/`](../data/raw/README.md).
+  raw samples (t, q, rr, ua, g). The schema is in [PROTOCOL.md](dev/PROTOCOL.md) §3. All 5 sessions are in
+  [`data/raw/`](../data/raw/README.md), with s4 and s5 (recorded after tuning) in `data/raw/day2/`.
 
 ## 4. Method
 
@@ -336,8 +336,12 @@ uv run python -m silent.bench --real --model all --protocol all --seeds 5
 uv run python -m silent.bench --real --model dtw-py --phase1 --protocol loso xbud --permutations 500
 uv run python -m silent.bench --real --model minirocket cnn --L 96 --norm clip --variant L96-clip --protocol loso xbud --seeds 5
 uv run python -m silent.bench --real --model dtw-py minirocket --protocol loso --permutations 500 --seeds 5
+cd ..
+
+# sections 5.2 to 5.5 (all 5 sessions)
+npx tsx scripts/five-session-analysis.ts data/raw/ss-dataset-*.json data/raw/day2/ss-dataset-*.json --exclude data/raw/exclude.json
 ```
 
-Sections 5.1 and the first two rows of 5.6 reproduce from the public data. Sections 5.2 to 5.5 and the live runs use
-s4 and s5, which are not published yet. The trivial baseline (5.3), the curves (5.4) and the selective
-classification table (5.5) were computed for this report with the same code and defaults.
+Everything except the live runs (5.7 and the last row of 5.6) reproduces from the data in the repo. The `--real`
+benchmark uses `data/raw/ss-dataset-*.json`, which is sessions 1 to 3 only; sessions 4 and 5 sit in `data/raw/day2/`
+so that benchmark stays as published.
