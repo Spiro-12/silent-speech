@@ -132,7 +132,7 @@ Two bars decide what may run (see [How it works](how-it-works.md#how-sure-is-it)
 - **Texts** need the model to accept the guess at **70%**.
 - **Harmless actions** (volume, music, calendar, the demo line) may run from **50%**.
 
-First, on the 3 published sessions, an 85% bar gave 61.6% of sentences acted on (55.1% with settings chosen without
+First, on sessions 1 to 3, an 85% bar gave 61.6% of sentences acted on (55.1% with settings chosen without
 the test session), 0 wrong and 0 "nothing" takes mistaken. At 50%: 85.4% acted on, 1.0% wrong.
 
 Then, with all 5 sessions (420 left ear sentence takes), leave one session out (with the optimism noted

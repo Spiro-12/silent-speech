@@ -7,6 +7,8 @@
 //   - accuracy against the number of training sessions, and against takes per class from one session (5.4)
 //   - within session leave one clip out (5.4)
 //   - coverage and wrong fires at confidence bars 0.5 to 0.9 on the left ear folds (5.5)
+//   - the variant docs/results.md and the README quote: train on left ear sessions only (top-1, coverage at 0.6, 0.7,
+//     0.85), plus the right ear sessions tested on a model of all left ear sessions
 // Right ear sessions are mirrored into the left ear frame by the model (PROTOCOL §5 step 0) and stay in training.
 import { readFileSync } from 'node:fs';
 import type { Clip, Dataset } from '../web/src/core/contracts';
@@ -20,7 +22,8 @@ interface Pred { truth: string; label: string; confidence: number; session: stri
 const args = process.argv.slice(2);
 const exIdx = args.indexOf('--exclude');
 const excludeFile = exIdx >= 0 ? args[exIdx + 1] : undefined;
-const files = args.filter((a, i) => a.endsWith('.json') && i !== exIdx + 1);
+if (exIdx >= 0 && !args[exIdx + 1]?.endsWith('.json')) { console.error('--exclude needs a file'); process.exit(2); }
+const files = args.filter((a, i) => a.endsWith('.json') && (exIdx < 0 || i !== exIdx + 1));
 if (!files.length) { console.error('usage: five-session-analysis.ts <ss-dataset files...> [--exclude exclude.json]'); process.exit(2); }
 
 const exclude = excludeFile ? parseExclude(JSON.parse(readFileSync(excludeFile, 'utf8'))) : new Set<string>();
@@ -126,4 +129,22 @@ for (const bar of [0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9]) {
   const wrong = fired.filter((p) => p.label !== p.truth).length;
   const nothingFired = nothing.filter((p) => p.label !== NONE && p.confidence >= bar).length;
   console.log(`  ${bar.toFixed(2)}: fired ${pct(fired.length, sentences.length)}, wrong ${wrong}, "nothing" fired ${nothingFired}`);
+}
+
+// The left ear only variant (docs/results.md, README): each left ear session tested on a model of the other left ear
+// sessions only, and the right ear sessions on a model of all left ear sessions.
+const leftOnly: Pred[] = [];
+for (const s of left) leftOnly.push(...predict(left.filter((x) => x !== s).flatMap((x) => bySession.get(x)!), bySession.get(s)!, s));
+const loSent = leftOnly.filter((p) => p.truth !== NONE), loNothing = leftOnly.filter((p) => p.truth === NONE);
+console.log('Left ear only variant (train on left ear sessions only)');
+console.log(`  top-1: ${pct(acc(leftOnly), leftOnly.length)}`);
+for (const bar of [0.6, 0.7, 0.85]) {
+  const fired = loSent.filter((p) => p.label !== NONE && p.confidence >= bar);
+  console.log(`  ${bar.toFixed(2)}: fired ${pct(fired.length, loSent.length)}, wrong ${fired.filter((p) => p.label !== p.truth).length}, "nothing" fired ${loNothing.filter((p) => p.label !== NONE && p.confidence >= bar).length}`);
+}
+for (const s of sessions.filter((x) => !isLeft(x))) {
+  const ps = predict(left.flatMap((x) => bySession.get(x)!), bySession.get(s)!, s);
+  const sent = ps.filter((p) => p.truth !== NONE);
+  const wrong = sent.filter((p) => p.label !== NONE && p.label !== p.truth && p.confidence >= 0.7).length;
+  console.log(`  ${s} (right ear) on all left ear sessions: ${pct(acc(ps), ps.length)}, wrong fires at 0.70: ${pct(wrong, sent.length)}`);
 }

@@ -27,7 +27,7 @@ works, what the numbers say, and where it is weak. Written for ML and sensing re
   confidence score built to reject unknown or still inputs. Inference takes about 13 ms per clip in the JS
   implementation.
 - **Accuracy (one subject).** Leave one session out, tested on the 4 left ear sessions (each trained on the other 4,
-  mirrored right ear s1 included): **98.1%** (468/477, 95% CI 96.5 to 99.0). On the 3 published sessions with hyperparameters chosen inside the cross validation: **88.2%**. A label
+  mirrored right ear s1 included): **98.1%** (468/477, 95% CI 96.5 to 99.0). On sessions 1 to 3 with hyperparameters chosen inside the cross validation: **88.2%**. A label
   shuffle test gives p = 0.002.
 - **Safe actions.** At the confidence bar used for texts (0.70), 81% of sentences act on the first try with **0 wrong
   actions out of 339 fired**, and 0 of 57 "nothing" takes fire.
@@ -78,7 +78,7 @@ flowchart LR
 ```
 
 - **Sensor stream.** `CMDeviceMotion` gives attitude (quaternion), `rotationRate`, `userAcceleration`, gravity and
-  `sensorLocation` (left or right bud). On AirPods Pro 3 it runs at about 50 Hz: in the published s1 to s3 the per clip rate is 47.5 to 50 Hz (median 50) and
+  `sensorLocation` (left or right bud). On AirPods Pro 3 it runs at about 50 Hz: across all 5 sessions the per clip rate is 47.5 to 50 Hz (median 50) and
   under 0.1% of intervals are over 60 ms, and the Mac app's own status read 49 to 50.5 Hz during the live runs. macOS
   chooses which bud streams.
 - **Bridge.** A small macOS app (Network.framework WebSocket on loopback only) streams samples, enforces an origin

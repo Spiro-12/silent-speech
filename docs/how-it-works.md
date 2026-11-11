@@ -176,7 +176,7 @@ then does its own checks: the pairing code, its cooldowns, and Armed again right
 
 ## Run the numbers yourself
 
-Spiro's first three sessions are published in [`data/raw/`](../data/raw/README.md) (motion only, no audio).
+All 5 of Spiro's sessions are published in [`data/raw/`](../data/raw/README.md) (motion only, no audio).
 
 **JavaScript** (the model the dashboard uses):
 
