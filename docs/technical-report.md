@@ -333,9 +333,9 @@ npx tsx scripts/eval-dtw.ts data/raw/ss-dataset-*.json --exclude data/raw/exclud
 
 cd ml && uv sync --extra cnn                                      # the CNN needs torch
 uv run python -m silent.bench --real --model all --protocol all --seeds 5
-uv run python -m silent.bench --real --model dtw-py --phase1 --protocol loso xbud
+uv run python -m silent.bench --real --model dtw-py --phase1 --protocol loso xbud --permutations 500
 uv run python -m silent.bench --real --model minirocket cnn --L 96 --norm clip --variant L96-clip --protocol loso xbud --seeds 5
-uv run python -m silent.bench --real --model dtw-py minirocket --protocol loso --permutations 500
+uv run python -m silent.bench --real --model dtw-py minirocket --protocol loso --permutations 500 --seeds 5
 ```
 
 Sections 5.1 and the first two rows of 5.6 reproduce from the public data. Sections 5.2 to 5.5 and the live runs use
