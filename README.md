@@ -198,6 +198,7 @@ More questions (Macs, Chrome, signing, Simulate motion): **[the full FAQ](docs/f
 | [Make it yours](docs/make-it-yours.md) | Your contact, your music, the demo screen, changing sentences |
 | [How it works](docs/how-it-works.md) | The sensor, the math, the safety rule |
 | [Results](docs/results.md) | Every number, and how it was measured |
+| [Technical report](docs/technical-report.md) | For ML readers: method, extra analyses, threats to validity, open questions |
 | [Safety and privacy](docs/safety-privacy.md) | What stays where, and what can run when |
 | [Troubleshooting](docs/troubleshooting.md) | When something does not work |
 | [FAQ](docs/faq.md) | Mic, AirPods models, Macs, Chrome, privacy, signing |

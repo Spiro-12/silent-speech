@@ -2,6 +2,9 @@
 
 How well does it work? Honest numbers, with how each was measured and what they do **not** show.
 
+For ML readers, the [technical report](technical-report.md) has the full method, extra analyses (trivial baselines,
+learning curves, selective classification) and the threats to validity.
+
 **The big caveat first:** every number here is from **one person** (Spiro), wearing **AirPods Pro 3** on a Mac,
 sitting still with his head against a chair. Nobody else has been tested yet. With 8 choices (7 sentences plus
 "nothing"), guessing at random would be right 12.5% of the time.
