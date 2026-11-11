@@ -42,7 +42,7 @@ Rules:
 - Browser URL options: `?mode=live|fake|replay`, `?ws=ws://127.0.0.1:8765`.
 
 ## 3. Dataset file `ss-dataset` v1
-One file per recording sitting, saved to `data/raw/`.
+One file per recording sitting, saved to `data/raw/` (sessions recorded after tuning in `data/raw/day2/`).
 ```jsonc
 { "format": "ss-dataset", "v": 1, "createdAt": "ISO", "session": "s1", "subject": "spiro",
   "source": "airpods" | "fake", "device": { "model": "AirPods Pro 3", "loc": "left" }, "hz": 25,

@@ -25,15 +25,17 @@ sitting still with his head against a chair. Nobody else has been tested yet. Wi
 | Takes | 600 recorded, **582 used**. 18 were mislabeled and are excluded everywhere: "nothing" takes where Spiro mouthed the words "stay still" (from an old prompt). The raw files are never edited. |
 | Ears | Session 1 on the **right** AirPod, the other four on the **left**. |
 | When | Sessions 1 to 3 on one afternoon (Oct 31, 2026), about 15 minutes apart. Sessions 4 and 5 the next day. |
-| Published | Sessions 1 to 3, in [`data/raw/`](../data/raw/README.md) (motion only, no audio). Sessions 4 and 5 are not published. |
+| Published | All 5, in [`data/raw/`](../data/raw/README.md) (sessions 4 and 5 in `data/raw/day2/`). Motion only, no audio. |
 
 ## Headline numbers
 
 All from Spiro's 5 sessions, with the dashboard's own model (DTW + kNN, the default settings).
 
-> **You cannot rerun these from this repo.** They use sessions 4 and 5, which are not published, and live tests on
-> Spiro's Mac. The numbers you can rerun are in [the published benchmark](#the-published-benchmark-3-sessions):
-> **88.2%** with settings chosen without the test session, 94.2% with settings tuned on the same sessions.
+> **The settings were tuned on sessions 1 to 3,** so these numbers are a little optimistic; sessions 4 and 5 were
+> recorded after tuning. The cleanest number is in [the published benchmark](#the-published-benchmark-3-sessions):
+> **88.2%** with settings chosen without the test session, 94.2% with settings tuned on the same sessions. The live
+> tests ran on Spiro's Mac and are not in the repo; everything else here reruns from `data/raw/`
+> (see the [technical report](technical-report.md#8-reproduce-it)).
 
 | Test | Result |
 |---|---|
@@ -130,7 +132,7 @@ Two bars decide what may run (see [How it works](how-it-works.md#how-sure-is-it)
 - **Texts** need the model to accept the guess at **70%**.
 - **Harmless actions** (volume, music, calendar, the demo line) may run from **50%**.
 
-First, on the 3 published sessions, an 85% bar gave 61.6% of sentences acted on (55.1% with settings chosen without
+First, on sessions 1 to 3, an 85% bar gave 61.6% of sentences acted on (55.1% with settings chosen without
 the test session), 0 wrong and 0 "nothing" takes mistaken. At 50%: 85.4% acted on, 1.0% wrong.
 
 Then, with all 5 sessions (420 left ear sentence takes), leave one session out (with the optimism noted
@@ -157,4 +159,4 @@ or plays music.
 - **Push to talk.** You hold Space while you mouth. There is no automatic detection yet.
 - **One AirPods model tested** (AirPods Pro 3, about 50 readings a second). Older AirPods send about half as many.
 - The first three sessions were recorded the same afternoon. Accuracy on another day is covered by sessions 4 and 5
-  (the next day), which are not published.
+  (the next day), in `data/raw/day2/`.
